@@ -16,6 +16,67 @@ def momentos(dx,dy,w):
      e = np.sqrt(E1**2 + E2**2)
      theta = np.arctan2(E2,E1)/2.
      return e,theta
+
+def NFW_ellip_plot(M200,z,e0,e1,sample):
+     ############  MAKING A GRID
+     
+     q0        = (1.-e0)/(1.+e0)
+     q1        = (1.-e1)/(1.+e1)
+     
+     a1  = np.arange(-5.001,5.3,0.07)
+     a0  = np.arange(-1.55,1.5,0.03)
+     
+     x1,y1 = np.meshgrid(a1,a1)
+     x0,y0 = np.meshgrid(a0,a0)
+     
+     x1 = x1.flatten()
+     y1 = y1.flatten()
+
+     x0 = x0.flatten()
+     y0 = y0.flatten()
+     
+     r0 = np.sqrt(x0**2 + y0**2)
+     r1 = np.sqrt(x1**2 + y1**2)
+
+     theta0  = np.arctan2(y0,x0)
+     theta1  = np.arctan2(y1,x1)
+     
+     j0   = argsort(r0)
+     r0   = r0[j0]
+     x0,y0 = x0[j0],y0[j0]
+     theta0  = theta0[j0]
+     
+     j1   = argsort(r1)
+     r1   = r1[j1]
+     x1,y1 = x1[j1],y1[j1]
+     theta1  = theta1[j1]
+     
+     # COMPUTE COMPONENTS
+
+     R0 = (r0**2)*np.sqrt(q0*(np.cos(theta0))**2 + (np.sin(theta0))**2 / q0)
+     R1 = (r1**2)*np.sqrt(q1*(np.cos(theta1))**2 + (np.sin(theta1))**2 / q1)
+     
+     out = multipole_shear(R1,M200=M200,z=z,ellip=e1)
+     S1 = out['Gt0']
+     Sn1 = np.log10(S1/np.sum(S1))
+     mr1 = R1 < 5.0
+
+     out = multipole_shear(R0,M200=M200,z=z,ellip=e0)
+     S0 = out['Gt0']
+     Sn0 = np.log10(S0/np.sum(S1))
+     mr0 = R0 < 1.0
+    
+     fig = plt.figure(figsize=(5,5))
+     ax = plt.gca()
+     ax.set_facecolor('k')
+     plt.title(sample)
+     plt.scatter(x1[mr1],y1[mr1],c=Sn1[mr1],cmap = 'magma',alpha=1,s = 20,vmin=-4.4,vmax=-2.5)
+     plt.scatter(x0[mr0],y0[mr0],c=Sn0[mr0],cmap = 'magma',alpha=1,s = 20,vmin=-4.4,vmax=-2.5)
+     plt.xlabel('x [Mpc]')
+     plt.ylabel('y [Mpc]')
+     plt.axis([-3,3,-3,3])
+     plt.savefig("/home/eli/Documentos/Astronomia/posdoc/halo-elongation/halo_"+sample+'.png')
+
      
 def D_miss(M200,e,z,Nmembers,niter=1000.):
 
@@ -30,7 +91,7 @@ def D_miss(M200,e,z,Nmembers,niter=1000.):
      ############  MAKING A GRID
      
      # a  = np.logspace(np.log10(0.01),np.log10(5.),10)
-     a  = np.arange(-1.001,1.3,0.02)
+     a  = np.arange(-5.001,5.3,0.1)
      # a  = np.append(a,-1.*a)
      
      x,y = np.meshgrid(a,a)
@@ -56,7 +117,7 @@ def D_miss(M200,e,z,Nmembers,niter=1000.):
      
      
      out = multipole_shear(R,M200=M200,z=z,ellip=e)
-     S = out['S0']
+     S = out['Gt0']
      Sn = S/np.sum(S)
      
      ang = np.array([])

@@ -2,12 +2,12 @@ import sys
 import numpy as np
 from scipy.optimize import curve_fit
 from scipy import integrate
+from astropy.constants import G,c,M_sun, pc
 
-cvel=299792458;   # Speed of light (m.s-1)
-G= 6.670e-11;   # Gravitational constant (m3.kg-1.s-2)
-pc= 3.085678e16; # 1 pc (m)
-Msun=1.989e30 # Solar mass (kg)
-
+cvel = c.value;   # Speed of light (m.s-1)
+G    = G.value;   # Gravitational constant (m3.kg-1.s-2)
+pc   = pc.value # 1 pc (m)
+Msun = M_sun.value # Solar mass (kg)
 
 def disp_sis(M200,H):
 	'''

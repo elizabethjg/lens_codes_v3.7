@@ -24,7 +24,8 @@ class Delta_Sigma_fit:
         xplot   = np.arange(0.001,R.max()+1.,0.001)
         if fitc:
             def NFW_profile(R,R200,c200):
-                return Delta_Sigma_NFW(R,z,R200,c200,cosmo=cosmo)
+                M200 = M200_NFW(R200,z,cosmo)
+                return Delta_Sigma_NFW(R,z,M200,c200,cosmo=cosmo)
             
             NFW_out = curve_fit(NFW_profile,R,D_Sigma,sigma=err,absolute_sigma=True)
             pcov    = NFW_out[1]
@@ -35,7 +36,7 @@ class Delta_Sigma_fit:
             c200    = NFW_out[0][1]
             M200    = M200_NFW(R200,z,cosmo)
             
-            ajuste  = NFW_profile(R,R200,c)
+            ajuste  = NFW_profile(R,R200,c200)
             chired  = chi_red(ajuste,D_Sigma,err,2)	
             
             yplot   = NFW_profile(xplot,R200,c200)
@@ -43,7 +44,8 @@ class Delta_Sigma_fit:
         else:
             
             def NFW_profile(R,R200):
-                return Delta_Sigma_NFW(R,z=z,R200=R200,cosmo=cosmo)
+                M200 = M200_NFW(R200,z,cosmo)
+                return Delta_Sigma_NFW(R,z=z,M200=M200,cosmo=cosmo)
             
             NFW_out = curve_fit(NFW_profile,R,D_Sigma,sigma=err,absolute_sigma=True)
             e_R200  = np.sqrt(NFW_out[1][0][0])

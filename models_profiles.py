@@ -4,7 +4,6 @@ from pylab import *
 from astropy.cosmology import LambdaCDM
 from scipy.misc import derivative
 from scipy import integrate
-from profiles_fit import *
 from multiprocessing import Pool
 from multiprocessing import Process
 import time
@@ -55,10 +54,10 @@ def R200_NFW(M200,z,cosmo=cosmo):
     R_200         (float or array of floats) 
     
     '''
-    
+
     roc_mpc = cosmo.critical_density(z).to(u.kg/(u.Mpc)**3).value
     
-    return (((M200*((50**0.5)*G*H*Msun))/2.)**(1./3.))/1.e3
+    return ((M200*(3.0*Msun))/(800.0*np.pi*roc_mpc))**(1./3.)
     
 
 def M200_NFW(R200,z,cosmo=cosmo):	
@@ -76,20 +75,20 @@ def M200_NFW(R200,z,cosmo=cosmo):
     R_200         (float or array of floats) 
     
     '''
-    
+
     roc_mpc = cosmo.critical_density(z).to(u.kg/(u.Mpc)**3).value
     
     return (800.0*np.pi*roc_mpc*(R200**3))/(3.0*Msun)
 
 
 
-def Delta_Sigma_NFW(R,z,R200,c200 = None,cosmo=cosmo):	
+def Delta_Sigma_NFW(R,z,M200,c200 = None,cosmo=cosmo):	
     '''
     Density contraste for NFW
     
     '''
   
-    M200 = M200_NFW(R200,z,cosmo)
+    R200 = R200_NFW(M200,z,cosmo)
     
     roc_mpc = cosmo.critical_density(z).to(u.kg/(u.Mpc)**3).value
     
@@ -137,7 +136,7 @@ def Delta_Sigma_NFW(R,z,R200,c200 = None,cosmo=cosmo):
 
 
 
-def Sigma_NFW(R,z,R200,c200 = None,cosmo=cosmo):			
+def Sigma_NFW(R,z,M200,c200 = None,cosmo=cosmo):			
     '''
     Projected density for NFW
     
@@ -146,7 +145,7 @@ def Sigma_NFW(R,z,R200,c200 = None,cosmo=cosmo):
     if not isinstance(R, (np.ndarray)):
         R = np.array([R])
     
-    M200 = M200_NFW(R200,z,cosmo)
+    R200 = R200_NFW(M200,z,cosmo)
     
     roc_mpc = cosmo.critical_density(z).to(u.kg/(u.Mpc)**3).value
     
@@ -186,3 +185,36 @@ def Sigma_NFW(R,z,R200,c200 = None,cosmo=cosmo):
     kapak=((2.*rs_m*deltac*roc_mpc)*(pc**2/Msun))/((pc*1.0e6)**3.0)
     
     return kapak*jota
+
+
+def GAMMA_components(R,z,ellip,M200,c200 = None,cosmo=cosmo):
+   
+    '''
+    Quadrupole term defined as (d(Sigma)/dr)*r
+    
+    '''
+    
+    def monopole(R):
+        return Sigma_NFW(R,z,M200,c200 = None,cosmo=cosmo)
+    
+    m0p = derivative(monopole,R,dx=1e-5)
+    q   =  m0p*R
+    
+    '''
+    vU_Eq10
+    
+    '''
+    
+    integral = []
+    for r in R:
+        argumento = lambda x: (x**3)*monopole(x)
+        integral += [integrate.quad(argumento, 0, r, epsabs=1.e-01, epsrel=1.e-01)[0]]
+        
+    p2 = integral*(-2./(R**2))
+    m  = monopole(R)
+    
+    gt2 = ellip*((-6*p2/R**2) - 2.*m + q)
+    gx2 = ellip*((-6*p2/R**2) - 4.*m)
+    
+    return [gt2,gx2]
+

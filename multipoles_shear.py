@@ -160,8 +160,8 @@ def multipole_shear(r,M200=1.e14,ellip=0.25,z=0.2,h=0.7,
 		if not isinstance(R, (np.ndarray)):
 			R = np.array([R])
 		
-		# m = R == 0.
-		# R[m] = 1.e-8
+		m = R == 0.
+		R[m] = 1.e-8
 		
 		#calculo de c usando la relacion de Duffy et al 2008
 		

@@ -16,6 +16,13 @@ G    = G.value;   # Gravitational constant (m3.kg-1.s-2)
 pc   = pc.value # 1 pc (m)
 Msun = M_sun.value # Solar mass (kg)
 
+def Gamma(Roff,s_off):
+    return (Roff/s_off**2)*np.exp(-1.*(Roff/s_off))
+
+def Rayleigh(Roff,s_off):
+    return (Roff/s_off**2)*np.exp(-0.5*(Roff/s_off)**2)
+
+
 def chi_red(ajuste,data,err,gl):
 	'''
 	Reduced chi**2
@@ -141,9 +148,16 @@ def Sigma_NFW(R,z,M200,c200 = None,cosmo=cosmo):
     Projected density for NFW
     
     '''		
+  
+		
     
     if not isinstance(R, (np.ndarray)):
         R = np.array([R])
+
+
+    m = R == 0.
+    R[m] = 1.e-8  
+
     
     R200 = R200_NFW(M200,z,cosmo)
     
@@ -195,7 +209,7 @@ def GAMMA_components(R,z,ellip,M200,c200 = None,cosmo=cosmo):
     '''
     
     def monopole(R):
-        return Sigma_NFW(R,z,M200,c200 = None,cosmo=cosmo)
+        return Sigma_NFW(R,z,M200,c200,cosmo=cosmo)
     
     m0p = derivative(monopole,R,dx=1e-5)
     q   =  m0p*R
@@ -218,3 +232,70 @@ def GAMMA_components(R,z,ellip,M200,c200 = None,cosmo=cosmo):
     
     return [gt2,gx2]
 
+
+def Sigma_NFW_miss(R,z,M200,s_off = None, tau = 0.2,
+                   c200 = None, P_Roff = Gamma, cosmo=cosmo):
+                       
+    
+    '''
+    Misscentred density NFW profile
+    F_Eq12
+    '''
+    
+
+    
+    R200 = R200_NFW(M200,z,cosmo)
+    
+    if not c200:
+        c200 = c200_duffy(M200*cosmo.h,z)
+
+    if not s_off:
+        s_off = tau*R200
+
+
+    def DS_RRs(Rs,R):
+        # F_Eq13
+        #argumento = lambda x: monopole(np.sqrt(R**2+Rs**2-2.*Rs*R*np.cos(x)))
+        #integral  = integrate.quad(argumento, 0, 2.*np.pi, epsabs=1.e-01, epsrel=1.e-01)[0]
+        x = np.linspace(0.,2.*np.pi,500)
+        integral  = integrate.simps(Sigma_NFW((np.sqrt(R**2+Rs**2-2.*Rs*R*np.cos(x))),z,M200,c200,cosmo),x,even='first')
+        return integral/(2.*np.pi)
+
+    
+    
+    integral = []
+    for r in R:
+        argumento = lambda x: DS_RRs(x,r)*P_Roff(x,s_off)
+        integral  += [integrate.quad(argumento, 0, np.inf, epsabs=1.e-02, epsrel=1.e-02)[0]]
+        
+    return integral
+
+
+def Delta_Sigma_NFW_miss(R,z,M200,s_off = None, tau = 0.2,
+                         c200 = None, P_Roff = Gamma, cosmo=cosmo):	
+    
+    '''
+    Misscentred density contraste for NFW
+    
+    '''
+  
+    R200 = R200_NFW(M200,z,cosmo)
+    
+        
+    if not c200:
+        c200 = c200_duffy(M200*cosmo.h,z)
+
+    if not s_off:
+        s_off = tau*R200
+
+
+    integral = []
+    for r in R:
+        argumento = lambda x: Sigma_NFW_miss([x],z,M200,s_off,tau,c200,P_Roff,cosmo)[0]*x
+        integral  += [integrate.quad(argumento, 0, r, epsabs=1.e-02, epsrel=1.e-02)[0]]
+
+    DS_off    = (2./R**2)*integral - Sigma_NFW_miss(R,z,M200,s_off,tau,c200,P_Roff,cosmo)
+
+    return DS_off
+
+    

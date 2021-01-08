@@ -253,7 +253,7 @@ def Sigma_NFW_miss(R,z,M200,s_off = None, tau = 0.2,
         s_off = tau*R200
 
 
-    def DS_RRs(Rs,R):
+    def S_RRs(Rs,R):
         # F_Eq13
         #argumento = lambda x: monopole(np.sqrt(R**2+Rs**2-2.*Rs*R*np.cos(x)))
         #integral  = integrate.quad(argumento, 0, 2.*np.pi, epsabs=1.e-01, epsrel=1.e-01)[0]
@@ -265,7 +265,7 @@ def Sigma_NFW_miss(R,z,M200,s_off = None, tau = 0.2,
     
     integral = []
     for r in R:
-        argumento = lambda x: DS_RRs(x,r)*P_Roff(x,s_off)
+        argumento = lambda x: S_RRs(x,r)*P_Roff(x,s_off)
         integral  += [integrate.quad(argumento, 0, np.inf, epsabs=1.e-02, epsrel=1.e-02)[0]]
         
     return integral
@@ -299,3 +299,109 @@ def Delta_Sigma_NFW_miss(R,z,M200,s_off = None, tau = 0.2,
     return DS_off
 
     
+
+
+def GAMMA_components_miss(R,z,M200,ellip,s_off = None, tau = 0.2,
+                         c200 = None, P_Roff = Gamma, cosmo=cosmo):	
+    
+    '''
+    Misscentred quadrupole components for NFW
+    
+    '''
+  
+    R200 = R200_NFW(M200,z,cosmo)
+    
+        
+    if not c200:
+        c200 = c200_duffy(M200*cosmo.h,z)
+
+    if not s_off:
+        s_off = tau*R200
+
+    def monopole(R):
+        return Sigma_NFW(R,z,M200,c200,cosmo=cosmo)
+    
+    def monopole_off(R):
+        return Sigma_NFW_miss([R],z,M200,s_off,tau,c200,P_Roff,cosmo)[0]
+    
+    def quadrupole(R):
+        m0p = derivative(monopole,R,dx=1e-5)
+        return m0p*R
+        
+    def S2_RRs(Rs,R):
+        # F_Eq13
+        #argumento = lambda x: monopole(np.sqrt(R**2+Rs**2-2.*Rs*R*np.cos(x)))
+        #integral  = integrate.quad(argumento, 0, 2.*np.pi, epsabs=1.e-01, epsrel=1.e-01)[0]
+        x = np.linspace(0.,2.*np.pi,500)
+        integral  = integrate.simps(quadrupole(np.sqrt(R**2+Rs**2-2.*Rs*R*np.cos(x))),x,even='first')
+        return integral/(2.*np.pi)
+
+    def psi2_off(R):
+        def arg(x):
+            return (x**3)*monopole_off(x)
+        argumento = lambda x: arg(x)
+        integral = integrate.quad(argumento, 0, R, epsabs=1.e-01, epsrel=1.e-01)[0]
+        return integral*(-2./(R**2))        
+
+    S2off = []
+    p2off = []
+    S0off = Sigma_NFW_miss(R,z,M200,s_off,tau,c200,P_Roff,cosmo)
+
+    for r in R:
+        print(r)
+        argumento = lambda x: S2_RRs(x,r)*P_Roff(x,s_off)
+        S2off  += [integrate.quad(argumento, 0, np.inf, epsabs=1.e-02, epsrel=1.e-02)[0]]
+        p2off  += [psi2_off(r)]
+
+    
+    '''
+    vU_Eq10
+    
+    '''
+    
+    p2off = np.array(p2off)
+    S2off = np.array(S2off)
+    S0off = np.array(S0off)
+    
+    gt2off = ellip*((-6.*p2off/R**2) - 2.*S0off + S2off)
+    gx2off = ellip*((-6.*p2off/R**2) - 4.*S0off)
+    
+    return [gt2off,gx2off]
+
+def Delta_Sigma_NFW_miss_unpack(minput):
+	return Delta_Sigma_NFW_miss(*minput)
+
+def Delta_Sigma_NFW_miss_parallel(r,z,M200,s_off = None, tau = 0.2,
+                         c200 = None, P_Roff = Gamma, cosmo=cosmo,ncores=4):	
+	
+    if ncores > len(r):
+        ncores = len(r)
+    
+    
+    slicer = int(round(len(r)/float(ncores), 0))
+    slices = ((np.arange(ncores-1)+1)*slicer).astype(int)
+    slices = slices[(slices <= len(r))]
+    r_splitted = np.split(r,slices)
+    
+    ncores = len(r_splitted)
+    
+    z      = [z]*ncores
+    M200   = [M200]*ncores
+    s_off  = [s_off]*ncores
+    tau    = [tau]*ncores
+    c200   = [c200]*ncores
+    P_Roff = [P_Roff]*ncores
+    cosmo  = [cosmo]*ncores
+        
+    entrada = np.array([r_splitted,z,M200,s_off,tau,c200,P_Roff,cosmo]).T
+    
+    pool = Pool(processes=(ncores))
+    salida=np.array(pool.map(Delta_Sigma_NFW_miss_unpack, entrada))
+    pool.terminate()
+
+    DS_miss = np.array([])
+    
+    for s in salida:
+        DS_miss = np.append(DS_miss,s)
+            
+    return DS_miss

@@ -368,6 +368,48 @@ def GAMMA_components_miss(R,z,M200,ellip,s_off = None, tau = 0.2,
     
     return [gt2off,gx2off]
 
+def GAMMA_components_miss_unpack(minput):
+	return GAMMA_components_miss(*minput)
+
+def GAMMA_components_miss_parallel(r,z,M200,ellip,s_off = None, tau = 0.2,
+                         c200 = None, P_Roff = Gamma, cosmo=cosmo,ncores=4):	
+	
+    if ncores > len(r):
+        ncores = len(r)
+    
+    
+    slicer = int(round(len(r)/float(ncores), 0))
+    slices = ((np.arange(ncores-1)+1)*slicer).astype(int)
+    slices = slices[(slices <= len(r))]
+    r_splitted = np.split(r,slices)
+    
+    ncores = len(r_splitted)
+    
+    z      = [z]*ncores
+    M200   = [M200]*ncores
+    ellip  = [ellip]*ncores
+    s_off  = [s_off]*ncores
+    tau    = [tau]*ncores
+    c200   = [c200]*ncores
+    P_Roff = [P_Roff]*ncores
+    cosmo  = [cosmo]*ncores
+        
+    entrada = np.array([r_splitted,z,M200,ellip,s_off,tau,c200,P_Roff,cosmo]).T
+    
+    pool = Pool(processes=(ncores))
+    salida=np.array(pool.map(GAMMA_components_miss_unpack, entrada))
+    pool.terminate()
+
+    GT_miss = np.array([])
+    GX_miss = np.array([])
+    
+    for s in salida:
+        gt,gx = s
+        GT_miss = np.append(GT_miss,gt)
+        GX_miss = np.append(GX_miss,gx)
+            
+    return [GT_miss,GX_miss]
+    
 def Delta_Sigma_NFW_miss_unpack(minput):
 	return Delta_Sigma_NFW_miss(*minput)
 

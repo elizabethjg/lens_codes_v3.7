@@ -484,6 +484,6 @@ def Sigma_NFW_miss_parallel(r,z,M200,s_off = None, tau = 0.2,
     S_miss = np.array([])
     
     for s in salida:
-        S_miss = np.append(DS_miss,s)
+        S_miss = np.append(S_miss,s)
             
     return S_miss

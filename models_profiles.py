@@ -432,7 +432,7 @@ def GAMMA_components_miss_parallel(r,z,M200,ellip,
             gt,gx,s2 = s
             GT_miss = np.append(GT_miss,gt)
             GX_miss = np.append(GX_miss,gx)
-            G2_miss = np.append(S2_miss,s2)
+            S2_miss = np.append(S2_miss,s2)
         else:
             gt,gx = s
             GT_miss = np.append(GT_miss,gt)

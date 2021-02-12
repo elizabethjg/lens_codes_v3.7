@@ -113,7 +113,7 @@ def D_miss(M200,e,z,Nmembers,niter=1000.):
          
      fi = theta - np.deg2rad(c_ang)
      
-     R = (r**2)*np.sqrt(q*(np.cos(fi))**2 + (np.sin(fi))**2 / q)
+     R = r*np.sqrt(q*(np.cos(fi))**2 + (np.sin(fi))**2 / q)
      
      
      out = multipole_shear(R,M200=M200,z=z,ellip=e)

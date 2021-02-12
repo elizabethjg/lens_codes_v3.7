@@ -201,6 +201,22 @@ def Sigma_NFW(R,z,M200,c200 = None,cosmo=cosmo):
     return kapak*jota
 
 
+def quadrupole(R,z,M200,c200 = None,cosmo=cosmo):
+   
+    '''
+    Quadrupole term defined as (d(Sigma)/dr)*r
+    
+    '''
+    
+    def monopole(R):
+        return Sigma_NFW(R,z,M200,c200,cosmo=cosmo)
+    
+    m0p = derivative(monopole,R,dx=1e-5)
+    q   =  -1.*m0p*R
+
+    return q
+
+
 def GAMMA_components(R,z,ellip,M200,c200 = None,cosmo=cosmo):
    
     '''
@@ -302,7 +318,7 @@ def Delta_Sigma_NFW_miss(R,z,M200,s_off = None, tau = 0.2,
 
 
 def GAMMA_components_miss(R,z,M200,ellip,s_off = None, tau = 0.2,
-                         c200 = None, P_Roff = Gamma, cosmo=cosmo):	
+                         c200 = None, P_Roff = Gamma, cosmo=cosmo, return_S2 = False):	
     
     '''
     Misscentred quadrupole components for NFW
@@ -366,13 +382,19 @@ def GAMMA_components_miss(R,z,M200,ellip,s_off = None, tau = 0.2,
     gt2off = ellip*((-6.*p2off/R**2) - 2.*S0off + S2off)
     gx2off = ellip*((-6.*p2off/R**2) - 4.*S0off)
     
-    return [gt2off,gx2off]
+    if return_S2:
+        return [gt2off,gx2off,S2off]
+    else:
+        return [gt2off,gx2off]
 
 def GAMMA_components_miss_unpack(minput):
 	return GAMMA_components_miss(*minput)
 
-def GAMMA_components_miss_parallel(r,z,M200,ellip,s_off = None, tau = 0.2,
-                         c200 = None, P_Roff = Gamma, cosmo=cosmo,ncores=4):	
+def GAMMA_components_miss_parallel(r,z,M200,ellip,
+                                   s_off = None, tau = 0.2,
+                                   c200 = None, P_Roff = Gamma, 
+                                   cosmo=cosmo,return_S2 = False,
+                                   ncores=4):	
 	
     if ncores > len(r):
         ncores = len(r)
@@ -393,8 +415,9 @@ def GAMMA_components_miss_parallel(r,z,M200,ellip,s_off = None, tau = 0.2,
     c200   = [c200]*ncores
     P_Roff = [P_Roff]*ncores
     cosmo  = [cosmo]*ncores
+    rS2    = [return_S2]*ncores
         
-    entrada = np.array([r_splitted,z,M200,ellip,s_off,tau,c200,P_Roff,cosmo]).T
+    entrada = np.array([r_splitted,z,M200,ellip,s_off,tau,c200,P_Roff,cosmo,rS2]).T
     
     pool = Pool(processes=(ncores))
     salida=np.array(pool.map(GAMMA_components_miss_unpack, entrada))
@@ -402,13 +425,24 @@ def GAMMA_components_miss_parallel(r,z,M200,ellip,s_off = None, tau = 0.2,
 
     GT_miss = np.array([])
     GX_miss = np.array([])
+    S2_miss = np.array([])
     
     for s in salida:
-        gt,gx = s
-        GT_miss = np.append(GT_miss,gt)
-        GX_miss = np.append(GX_miss,gx)
-            
-    return [GT_miss,GX_miss]
+        if return_S2:
+            gt,gx,s2 = s
+            GT_miss = np.append(GT_miss,gt)
+            GX_miss = np.append(GX_miss,gx)
+            G2_miss = np.append(S2_miss,s2)
+        else:
+            gt,gx = s
+            GT_miss = np.append(GT_miss,gt)
+            GX_miss = np.append(GX_miss,gx)
+
+    if return_S2:
+        return [GT_miss,GX_miss,S2_miss]
+    else:
+        return [GT_miss,GX_miss]
+    
     
 def Delta_Sigma_NFW_miss_unpack(minput):
 	return Delta_Sigma_NFW_miss(*minput)

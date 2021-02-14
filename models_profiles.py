@@ -364,7 +364,6 @@ def GAMMA_components_miss(R,z,M200,ellip,s_off = None, tau = 0.2,
     S0off = Sigma_NFW_miss(R,z,M200,s_off,tau,c200,P_Roff,cosmo)
 
     for r in R:
-        print(r)
         argumento = lambda x: S2_RRs(x,r)*P_Roff(x,s_off)
         S2off  += [integrate.quad(argumento, 0, np.inf, epsabs=1.e-02, epsrel=1.e-02)[0]]
         p2off  += [psi2_off(r)]

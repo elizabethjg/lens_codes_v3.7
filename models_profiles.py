@@ -765,7 +765,7 @@ def Delta_Sigma_NFW_miss_elip_parallel(r,z,M200,s_off = None, tau = 0.2,
     return DS_miss
 
 
-def Sigma_NFW_miss_unpack(minput):
+def Sigma_NFW_miss_elip_unpack(minput):
 	return Sigma_NFW_miss_elip(*minput)
 
 

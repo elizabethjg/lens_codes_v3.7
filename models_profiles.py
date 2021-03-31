@@ -562,7 +562,7 @@ def Sigma_NFW_miss_elip(R,z,M200,s_off = None, tau = 0.2,
     integral = []
     for r in R:
         argumento = lambda t,x: Smiss(x,t,r)*P_Roff(x,t,s_off,qmiss)
-        integral  += [(1./2.*np.pi)*(integrate.dblquad(argumento, 0, np.inf, lambda x: 0, lambda x: 2.*np.pi, epsabs=1.e-02, epsrel=1.e-02)[0])]
+        integral  += [(1./(2.*np.pi))*(integrate.dblquad(argumento, 0, np.inf, lambda x: 0, lambda x: 2.*np.pi, epsabs=1.e-02, epsrel=1.e-02)[0])]
         
     return integral
 
@@ -644,7 +644,7 @@ def GAMMA_components_miss_elip(R,z,M200,ellip,s_off = None, tau = 0.2,
 
     for r in R:
         argumento = lambda t,x: S2miss(x,t,r)*P_Roff(x,t,s_off,qmiss)
-        S2off  += [(1./2.*np.pi)*(integrate.dblquad(argumento, 0, np.inf, lambda x: 0, lambda x: 2.*np.pi, epsabs=1.e-02, epsrel=1.e-02)[0])]
+        S2off  += [(1./(2.*np.pi))*(integrate.dblquad(argumento, 0, np.inf, lambda x: 0, lambda x: 2.*np.pi, epsabs=1.e-02, epsrel=1.e-02)[0])]
         p2off  += [psi2_off(r)]
 
     

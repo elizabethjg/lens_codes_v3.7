@@ -530,9 +530,18 @@ def Rayleigh_elip(roff,theta,s_off,q):
     Roff = roff*np.sqrt(q*(np.cos(theta))**2 + (np.sin(theta))**2 / q)
     return (Roff/s_off**2)*np.exp(-0.5*(Roff/s_off)**2)
 
+def Gauss_elip_xy(x,y,soffx,soffy):
+    g = (1./(2*np.pi*soffx*soffy))*np.exp(-0.5*((x/soffx)**2 + (y/soffy)**2))
+    return g
 
-def Sigma_NFW_miss_elip(R,z,M200,s_off = None, tau = 0.2,
-                   c200 = None, P_Roff = Rayleigh_elip, 
+def Gauss_elip(r,t,soffx,soffy):
+    g = Gauss_elip_xy(r*np.cos(t),r*np.sin(t),soffx,soffy)
+    return g
+
+
+
+def Sigma_NFW_miss_elip(R,z,M200,soffx = 0.1, soffy = 0.05,
+                   c200 = None, P_Roff = Gauss_elip, 
                    qmiss = 0.8, cosmo=cosmo):
                        
     
@@ -548,8 +557,6 @@ def Sigma_NFW_miss_elip(R,z,M200,s_off = None, tau = 0.2,
     if not c200:
         c200 = c200_duffy(M200*cosmo.h,z)
 
-    if not s_off:
-        s_off = tau*R200
 
 
     def Smiss(Rs,theta,R):
@@ -561,14 +568,14 @@ def Sigma_NFW_miss_elip(R,z,M200,s_off = None, tau = 0.2,
     
     integral = []
     for r in R:
-        argumento = lambda t,x: Smiss(x,t,r)*P_Roff(x,t,s_off,qmiss)
+        argumento = lambda t,x: x*Smiss(x,t,r)*P_Roff(x,t,soffx,soffy)
         integral  += [(1./(2.*np.pi))*(integrate.dblquad(argumento, 0, np.inf, lambda x: 0, lambda x: 2.*np.pi, epsabs=1.e-02, epsrel=1.e-02)[0])]
         
     return integral
 
 
-def Delta_Sigma_NFW_miss_elip(R,z,M200,s_off = None, tau = 0.2,
-                         c200 = None, P_Roff = Rayleigh_elip, 
+def Delta_Sigma_NFW_miss_elip(R,z,M200,soffx = 0.1, soffy = 0.05,
+                         c200 = None, P_Roff = Gauss_elip, 
                          qmiss = 0.8, cosmo=cosmo):	
     
     '''
@@ -582,24 +589,21 @@ def Delta_Sigma_NFW_miss_elip(R,z,M200,s_off = None, tau = 0.2,
     if not c200:
         c200 = c200_duffy(M200*cosmo.h,z)
 
-    if not s_off:
-        s_off = tau*R200
-
 
     integral = []
     for r in R:
-        argumento = lambda x: Sigma_NFW_miss_elip([x],z,M200,s_off,tau,c200,P_Roff,qmiss,cosmo)[0]*x
+        argumento = lambda x: Sigma_NFW_miss_elip([x],z,M200,soffx,soffy,c200,P_Roff,qmiss,cosmo)[0]*x
         integral  += [integrate.quad(argumento, 0, r, epsabs=1.e-02, epsrel=1.e-02)[0]]
 
-    DS_off    = (2./R**2)*integral - Sigma_NFW_miss_elip(R,z,M200,s_off,tau,c200,P_Roff,qmiss,cosmo)
+    DS_off    = (2./R**2)*integral - Sigma_NFW_miss_elip(R,z,M200,soffx,soffy,c200,P_Roff,qmiss,cosmo)
 
     return DS_off
 
     
 
 
-def GAMMA_components_miss_elip(R,z,M200,ellip,s_off = None, tau = 0.2,
-                         c200 = None, P_Roff = Rayleigh_elip, 
+def GAMMA_components_miss_elip(R,z,M200,ellip,soffx = 0.1, soffy = 0.05,
+                         c200 = None, P_Roff = Gauss_elip, 
                          qmiss = 0.8, cosmo=cosmo, return_S2 = False):	
     
     '''
@@ -613,14 +617,12 @@ def GAMMA_components_miss_elip(R,z,M200,ellip,s_off = None, tau = 0.2,
     if not c200:
         c200 = c200_duffy(M200*cosmo.h,z)
 
-    if not s_off:
-        s_off = tau*R200
 
     def monopole(R):
         return Sigma_NFW(R,z,M200,c200,cosmo=cosmo)
     
     def monopole_off(R):
-        return Sigma_NFW_miss_elip([R],z,M200,s_off,tau,c200,P_Roff,qmiss,cosmo)[0]
+        return Sigma_NFW_miss_elip([R],z,M200,soffx,soffy,c200,P_Roff,qmiss,cosmo)[0]
     
     def quadrupole(R):
         m0p = derivative(monopole,R,dx=1e-5)
@@ -640,10 +642,10 @@ def GAMMA_components_miss_elip(R,z,M200,ellip,s_off = None, tau = 0.2,
 
     S2off = []
     p2off = []
-    S0off = Sigma_NFW_miss_elip(R,z,M200,s_off,tau,c200,P_Roff,qmiss,cosmo)
+    S0off = Sigma_NFW_miss_elip(R,z,M200,soffx,soffy,c200,P_Roff,qmiss,cosmo)
 
     for r in R:
-        argumento = lambda t,x: S2miss(x,t,r)*P_Roff(x,t,s_off,qmiss)
+        argumento = lambda t,x: x*S2miss(x,t,r)*P_Roff(x,t,soffx,soffy)
         S2off  += [(1./(2.*np.pi))*(integrate.dblquad(argumento, 0, np.inf, lambda x: 0, lambda x: 2.*np.pi, epsabs=1.e-02, epsrel=1.e-02)[0])]
         p2off  += [psi2_off(r)]
 
@@ -669,8 +671,8 @@ def GAMMA_components_miss_elip_unpack(minput):
 	return GAMMA_components_miss_elip(*minput)
 
 def GAMMA_components_miss_elip_parallel(r,z,M200,ellip,
-                                   s_off = None, tau = 0.2,
-                                   c200 = None, P_Roff = Rayleigh_elip, 
+                                   soffx = 0.1, soffy = 0.05,
+                                   c200 = None, P_Roff = Gauss_elip, 
                                    qmiss = 0.8, cosmo=cosmo,
                                    return_S2 = False,
                                    ncores=4):	
@@ -689,15 +691,15 @@ def GAMMA_components_miss_elip_parallel(r,z,M200,ellip,
     z      = [z]*ncores
     M200   = [M200]*ncores
     ellip  = [ellip]*ncores
-    s_off  = [s_off]*ncores
-    tau    = [tau]*ncores
+    soffx  = [soffx]*ncores
+    soffy  = [soffy]*ncores
     c200   = [c200]*ncores
     P_Roff = [P_Roff]*ncores
     cosmo  = [cosmo]*ncores
     rS2    = [return_S2]*ncores
     qmiss    = [qmiss]*ncores
         
-    entrada = np.array([r_splitted,z,M200,ellip,s_off,tau,c200,P_Roff,qmiss,cosmo,rS2]).T
+    entrada = np.array([r_splitted,z,M200,ellip,soffx,soffy,c200,P_Roff,qmiss,cosmo,rS2]).T
     
     pool = Pool(processes=(ncores))
     salida=np.array(pool.map(GAMMA_components_miss_elip_unpack, entrada))
@@ -727,8 +729,8 @@ def GAMMA_components_miss_elip_parallel(r,z,M200,ellip,
 def Delta_Sigma_NFW_miss_elip_unpack(minput):
 	return Delta_Sigma_NFW_miss_elip(*minput)
 
-def Delta_Sigma_NFW_miss_elip_parallel(r,z,M200,s_off = None, tau = 0.2,
-                         c200 = None, P_Roff = Rayleigh_elip, 
+def Delta_Sigma_NFW_miss_elip_parallel(r,z,M200,soffx = 0.1, soffy = 0.05,
+                         c200 = None, P_Roff = Gauss_elip, 
                          qmiss = 0.8,cosmo=cosmo,ncores=4):	
 	
     if ncores > len(r):
@@ -744,14 +746,14 @@ def Delta_Sigma_NFW_miss_elip_parallel(r,z,M200,s_off = None, tau = 0.2,
     
     z      = [z]*ncores
     M200   = [M200]*ncores
-    s_off  = [s_off]*ncores
-    tau    = [tau]*ncores
+    soffx  = [soffx]*ncores
+    soffy  = [soffy]*ncores
     c200   = [c200]*ncores
     P_Roff = [P_Roff]*ncores
     cosmo  = [cosmo]*ncores
     qmiss  = [qmiss]*ncores
         
-    entrada = np.array([r_splitted,z,M200,s_off,tau,c200,P_Roff,qmiss,cosmo]).T
+    entrada = np.array([r_splitted,z,M200,soffx,soffy,c200,P_Roff,qmiss,cosmo]).T
     
     pool = Pool(processes=(ncores))
     salida=np.array(pool.map(Delta_Sigma_NFW_miss_elip_unpack, entrada))
@@ -769,8 +771,8 @@ def Sigma_NFW_miss_elip_unpack(minput):
 	return Sigma_NFW_miss_elip(*minput)
 
 
-def Sigma_NFW_miss_elip_parallel(r,z,M200,s_off = None, tau = 0.2,
-                         c200 = None, P_Roff = Rayleigh_elip, 
+def Sigma_NFW_miss_elip_parallel(r,z,M200,soffx = 0.1, soffy = 0.05,
+                         c200 = None, P_Roff = Gauss_elip, 
                          qmiss = 0.8,cosmo=cosmo,ncores=4):	
 	
     if ncores > len(r):
@@ -786,14 +788,14 @@ def Sigma_NFW_miss_elip_parallel(r,z,M200,s_off = None, tau = 0.2,
     
     z      = [z]*ncores
     M200   = [M200]*ncores
-    s_off  = [s_off]*ncores
-    tau    = [tau]*ncores
+    soffx  = [soffx]*ncores
+    soffy  = [soffy]*ncores
     c200   = [c200]*ncores
     P_Roff = [P_Roff]*ncores
     cosmo  = [cosmo]*ncores
     qmiss  = [qmiss]*ncores
         
-    entrada = np.array([r_splitted,z,M200,s_off,tau,c200,P_Roff,qmiss,cosmo]).T
+    entrada = np.array([r_splitted,z,M200,soffx,soffy,c200,P_Roff,qmiss,cosmo]).T
     
     pool = Pool(processes=(ncores))
     salida=np.array(pool.map(Sigma_NFW_miss_elip_unpack, entrada))

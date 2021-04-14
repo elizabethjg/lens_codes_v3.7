@@ -43,6 +43,14 @@ def compute_axis(x,y,z,w = None):
      if not w:
           w = np.ones(len(x))
 
+     xc = np.average(x,weights=w)
+     yc = np.average(y,weights=w)
+     zc = np.average(z,weights=w)
+
+     x = x - xc
+     y = y - yc
+     z = z - zc
+
      # COMPUTE 3D Tensor
 
      T3D = np.zeros((3,3))
@@ -69,9 +77,6 @@ def compute_axis(x,y,z,w = None):
      # COMPUTE projected quantities
      
      # define centre according to the particle positions
-     xc = np.average(x,weights=w)
-     yc = np.average(y,weights=w)
-     zc = np.average(z,weights=w)
      
      # compute projected coordinates
      xp,yp = projected_coodinates(x,y,z,xc,yc,zc)

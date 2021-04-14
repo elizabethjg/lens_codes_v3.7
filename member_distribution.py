@@ -1,10 +1,95 @@
 import numpy as np
-sys.path.append('/home/eli/lens_codes_v3.7')
 from profiles_fit import SIGMA_nfw
 from profiles_fit import r200_nfw
 from astropy.cosmology import LambdaCDM
 from multipoles_shear import multipole_shear
 from scipy import integrate
+
+def projected_coodinates(x,y,z,xc,yc,zc):
+
+     ra_center = np.arctan(xc/yc)
+     dec_center = np.arcsin(zc/np.sqrt(xc**2 + yc**2 + zc**2))
+     
+     e1x =   np.cos(ra_center)
+     e1y =   -np.sin(ra_center)
+     
+     e2x = -np.sin(dec_center) * np.sin(ra_center)
+     e2y = -np.sin(dec_center) * np.cos(ra_center)
+     e2z =  np.cos(dec_center)
+     
+     # Projected coordinates
+     xp = e1x*x + e1y*y
+     yp = e2x*x + e2y*y + e2z*z
+     
+     return xp,yp
+
+
+def compute_axis(x,y,z,w = None):
+     
+     '''
+     Compute 3D and projected 2D axis
+     according to the moment of inertia
+     (INPUT)
+     x,y,z 3D coordinates arrays of len(N)
+           wher N is the total number of particles
+           
+     w     len(N) array with weights, if not define
+           this will be defined as a unity array
+           
+     (OUTPUT)
+     v,w,v2d,w2d Eigenvectors and eingenvalues in 3D and projected
+     '''
+     
+     if not w:
+          w = np.ones(len(x))
+
+     # COMPUTE 3D Tensor
+
+     T3D = np.zeros((3,3))
+
+     T3D[0,0] = np.sum(w*x**2)/np.sum(w)
+     T3D[0,1] = np.sum(w*x*y)/np.sum(w)
+     T3D[0,2] = np.sum(w*x*z)/np.sum(w)
+
+     T3D[1,0] = np.sum(w*y*x)/np.sum(w)     
+     T3D[1,1] = np.sum(w*y**2)/np.sum(w)
+     T3D[1,2] = np.sum(w*y*z)/np.sum(w)
+
+     T3D[2,0] = np.sum(w*z*x)/np.sum(w)
+     T3D[2,1] = np.sum(w*z*y)/np.sum(w)
+     T3D[2,2] = np.sum(w*z**2)/np.sum(w)
+
+     w3d,v3d =np.linalg.eig(T3D)
+
+     j = np.flip(np.argsort(w3d))
+     w3d = w3d[j] # Ordered eingenvalues
+     v3d = v3d[:,j] # Ordered eingenvectors
+     
+     # -----------------------------------------------
+     # COMPUTE projected quantities
+     
+     # define centre according to the particle positions
+     xc = np.average(x,weights=w)
+     yc = np.average(y,weights=w)
+     zc = np.average(z,weights=w)
+     
+     # compute projected coordinates
+     xp,yp = projected_coodinates(x,y,z,xc,yc,zc)
+     
+     T2D = np.zeros((2,2))
+     
+     T2D[0,0] = np.sum(w*xp**2)/np.sum(w)
+     T2D[0,1] = np.sum(w*xp*yp)/np.sum(w)
+     T2D[1,0] = np.sum(w*xp*yp)/np.sum(w)
+     T2D[1,1] = np.sum(w*yp**2)/np.sum(w)
+     
+     w2d,v2d =np.linalg.eig(T2D)
+     
+     j = np.flip(np.argsort(w2d))
+     w2d = w2d[j] # Ordered eingenvalues
+     v2d = v2d[:,j] # Ordered eingenvectors
+     
+     return v3d,w3d,v2d,w2d
 
 def momentos(dx,dy,w):
      

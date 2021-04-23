@@ -40,7 +40,7 @@ def compute_axis(x,y,z,w = None):
      v,w,v2d,w2d Eigenvectors and eingenvalues in 3D and projected
      '''
      
-     if not w:
+     if not all(w):
           w = np.ones(len(x))
 
      xc = np.average(x,weights=w)

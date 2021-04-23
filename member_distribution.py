@@ -27,6 +27,7 @@ def projected_coodinates(x,y,z,xc,yc,zc):
 def compute_axis(x,y,z,w = None):
      
      '''
+     
      Compute 3D and projected 2D axis
      according to the moment of inertia
      (INPUT)

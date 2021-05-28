@@ -201,7 +201,7 @@ def Sigma_NFW(R,z,M200,c200 = None,cosmo=cosmo):
     
     return kapak*jota
     
-def ro_NFW(R,z,M200,c200 = None,cosmo=cosmo):			
+def rho_NFW(R,z,M200,c200 = None,cosmo=cosmo):			
     '''
     Projected density for NFW
     

@@ -200,6 +200,37 @@ def Sigma_NFW(R,z,M200,c200 = None,cosmo=cosmo):
     kapak=((2.*rs_m*deltac*roc_mpc)*(pc**2/Msun))/((pc*1.0e6)**3.0)
     
     return kapak*jota
+    
+def ro_NFW(R,z,M200,c200 = None,cosmo=cosmo):			
+    '''
+    Projected density for NFW
+    
+    '''		
+    
+    if not isinstance(R, (np.ndarray)):
+        R = np.array([R])
+
+
+    m = R == 0.
+    R[m] = 1.e-8  
+
+    
+    R200 = R200_NFW(M200,z,cosmo)
+    
+    roc_mpc = cosmo.critical_density(z).to(u.Msun/(u.pc)**3).value
+    
+    if not c200:
+        c200 = c200_duffy(M200*cosmo.h,z)
+    
+    ####################################################
+    
+    deltac=(200./3.)*( (c200**3) / ( np.log(1.+c200)- (c200/(1+c200)) ))
+    
+    x=(R*c200)/R200
+
+    ro = (deltac * roc_mpc)/(x * ((1 + x)**2))
+    
+    return ro
 
 
 def quadrupole(R,z,M200,c200 = None,cosmo=cosmo):

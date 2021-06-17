@@ -167,7 +167,7 @@ class rho_fit:
                 M200    = M200_NFW(R200,z,cosmo)
                 
                 ajuste  = NFW_profile(R,R200,c200)
-                chired  = chi_red(ajuste,D_Sigma,err,2)	
+                chired  = chi_red(ajuste,rho,err,2)	
                 
                 yplot   = NFW_profile(xplot,R200,c200)
             
@@ -198,7 +198,7 @@ class rho_fit:
                 
                 ajuste  = NFW_profile(R,R200)
                 
-                chired  = chi_red(ajuste,D_Sigma,err,1)	
+                chired  = chi_red(ajuste,rho,err,1)	
                 yplot   = NFW_profile(xplot,R200)
                 
                 #calculo de c usando la relacion de Duffy et al 2008

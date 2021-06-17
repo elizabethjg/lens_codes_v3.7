@@ -158,7 +158,7 @@ class Sigma_fit:
                 M200 = M200_NFW(R200,z,cosmo)
                 return Sigma_NFW(R,z=z,M200=M200,cosmo=cosmo)
 
-            try
+            try:
                 NFW_out = curve_fit(NFW_profile,R,Sigma,sigma=err,absolute_sigma=True)
                 e_R200  = np.sqrt(NFW_out[1][0][0])
                 R200    = NFW_out[0][0]

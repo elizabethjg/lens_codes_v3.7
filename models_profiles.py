@@ -162,7 +162,7 @@ def Sigma_NFW(R,z,M200,c200 = None,cosmo=cosmo):
     
     R200 = R200_NFW(M200,z,cosmo)
     
-    roc_mpc = cosmo.critical_density(z).to(u.kg/(u.Mpc)**3).value
+    roc_mpc = cosmo.critical_density(z).to(u.Msun/(u.Mpc)**3).value
     
     if not c200:
         c200 = c200_duffy(M200*cosmo.h,z)
@@ -196,9 +196,9 @@ def Sigma_NFW(R,z,M200,c200 = None,cosmo=cosmo):
     
     jota[m4] = np.interp(x[m4].astype(float64),[x1,x2],[j1,j2])
                 
-    rs_m=(R200*1.e6*pc)/c200
-    kapak=((2.*rs_m*deltac*roc_mpc)*(pc**2/Msun))/((pc*1.0e6)**3.0)
-    
+    rs_m = R200/c200
+    kapak = (2.*rs_m*deltac*roc_mpc)
+    # Units M_sun/Mpc2
     return kapak*jota
     
 def rho_NFW(R,z,M200,c200 = None,cosmo=cosmo):			
@@ -217,7 +217,7 @@ def rho_NFW(R,z,M200,c200 = None,cosmo=cosmo):
     
     R200 = R200_NFW(M200,z,cosmo)
     
-    roc_mpc = cosmo.critical_density(z).to(u.Msun/(u.pc)**3).value
+    roc_mpc = cosmo.critical_density(z).to(u.Msun/(u.Mpc)**3).value
     
     if not c200:
         c200 = c200_duffy(M200*cosmo.h,z)
@@ -229,7 +229,7 @@ def rho_NFW(R,z,M200,c200 = None,cosmo=cosmo):
     x=(R*c200)/R200
 
     ro = (deltac * roc_mpc)/(x * ((1 + x)**2))
-    
+    # Units M_sun/Mpc3
     return ro
 
 

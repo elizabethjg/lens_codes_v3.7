@@ -29,7 +29,7 @@ class Delta_Sigma_fit:
                 
             try:
             
-                NFW_out = curve_fit(NFW_profile,R,D_Sigma,sigma=err,absolute_sigma=True)
+                NFW_out = curve_fit(NFW_profile,R,D_Sigma,sigma=err,absolute_sigma=True, bounds=([11,0],[16,10]))
                 pcov    = NFW_out[1]
                 perr    = np.sqrt(np.diag(pcov))
                 e_R200  = perr[0]
@@ -124,7 +124,7 @@ class Sigma_fit:
                 return Sigma_NFW(R,z,M200,c200,cosmo=cosmo)
             
             try:
-                NFW_out = curve_fit(NFW_profile,R,Sigma,sigma=err,absolute_sigma=True)
+                NFW_out = curve_fit(NFW_profile,R,Sigma,sigma=err,absolute_sigma=True, bounds=([11,0],[16,10]))
                 pcov    = NFW_out[1]
                 perr    = np.sqrt(np.diag(pcov))
                 e_R200  = perr[0]
@@ -219,7 +219,7 @@ class rho_fit:
             
             try:
                 
-                NFW_out = curve_fit(NFW_profile,R,rho,sigma=err,absolute_sigma=True)
+                NFW_out = curve_fit(NFW_profile,R,rho,sigma=err,absolute_sigma=True, bounds=([11,0],[16,10]))
                 pcov    = NFW_out[1]
                 perr    = np.sqrt(np.diag(pcov))
                 e_R200  = perr[0]

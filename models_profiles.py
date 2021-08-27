@@ -241,7 +241,7 @@ def quadrupole(R,z,M200,c200 = None,cosmo=cosmo):
     '''
     
     def monopole(R):
-        return Sigma_NFW(R,z,M200,c200,cosmo=cosmo)
+        return Sigma_NFW(R,z,M200,c200,cosmo=cosmo)/1.e6**2
     
     m0p = derivative(monopole,R,dx=1e-5)
     q   =  -1.*m0p*R
@@ -257,7 +257,7 @@ def GAMMA_components(R,z,ellip,M200,c200 = None,cosmo=cosmo):
     '''
     
     def monopole(R):
-        return Sigma_NFW(R,z,M200,c200,cosmo=cosmo)
+        return Sigma_NFW(R,z,M200,c200,cosmo=cosmo)/1.e6**2
     
     m0p = derivative(monopole,R,dx=1e-5)
     q   =  m0p*R
@@ -306,7 +306,7 @@ def Sigma_NFW_miss(R,z,M200,s_off = None, tau = 0.2,
         #argumento = lambda x: monopole(np.sqrt(R**2+Rs**2-2.*Rs*R*np.cos(x)))
         #integral  = integrate.quad(argumento, 0, 2.*np.pi, epsabs=1.e-01, epsrel=1.e-01)[0]
         x = np.linspace(0.,2.*np.pi,500)
-        integral  = integrate.simps(Sigma_NFW((np.sqrt(R**2+Rs**2-2.*Rs*R*np.cos(x))),z,M200,c200,cosmo),x,even='first')
+        integral  = integrate.simps(Sigma_NFW((np.sqrt(R**2+Rs**2-2.*Rs*R*np.cos(x)))/1.e6**2,z,M200,c200,cosmo),x,even='first')
         return integral/(2.*np.pi)
 
     
@@ -367,7 +367,7 @@ def GAMMA_components_miss(R,z,M200,ellip,s_off = None, tau = 0.2,
         s_off = tau*R200
 
     def monopole(R):
-        return Sigma_NFW(R,z,M200,c200,cosmo=cosmo)
+        return Sigma_NFW(R,z,M200,c200,cosmo=cosmo)/1.e6**2
     
     def monopole_off(R):
         return Sigma_NFW_miss([R],z,M200,s_off,tau,c200,P_Roff,cosmo)[0]
@@ -590,7 +590,7 @@ def Sigma_NFW_miss_elip(R,z,M200,soffx = 0.1, soffy = 0.05,
 
     def Smiss(Rs,theta,R):
         # F_Eq13
-        Sm = Sigma_NFW((np.sqrt(R**2+Rs**2-2.*Rs*R*np.cos(theta))),z,M200,c200,cosmo)
+        Sm = Sigma_NFW((np.sqrt(R**2+Rs**2-2.*Rs*R*np.cos(theta))),z,M200,c200,cosmo)/1.e6**2
         return Sm
 
     
@@ -648,7 +648,7 @@ def GAMMA_components_miss_elip(R,z,M200,ellip,soffx = 0.1, soffy = 0.05,
 
 
     def monopole(R):
-        return Sigma_NFW(R,z,M200,c200,cosmo=cosmo)
+        return Sigma_NFW(R,z,M200,c200,cosmo=cosmo)/1.e6**2
     
     def monopole_off(R):
         return Sigma_NFW_miss_elip([R],z,M200,soffx,soffy,c200,P_Roff,qmiss,cosmo)[0]

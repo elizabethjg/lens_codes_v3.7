@@ -124,7 +124,7 @@ class Sigma_fit:
                 return Sigma_NFW(R,z,M200,c200,cosmo=cosmo)
             
             try:
-                NFW_out = curve_fit(NFW_profile,R,Sigma,sigma=err,absolute_sigma=True,bounds=([0,0],[4,20]))
+                NFW_out = curve_fit(NFW_profile,R,Sigma,sigma=err,absolute_sigma=True,bounds=([0,0],[4,50]))
                 pcov    = NFW_out[1]
                 perr    = np.sqrt(np.diag(pcov))
                 e_R200  = perr[0]
@@ -219,7 +219,7 @@ class rho_fit:
             
             try:
                 
-                NFW_out = curve_fit(NFW_profile,R,rho,sigma=err,absolute_sigma=True,bounds=([0,0],[4,20]))
+                NFW_out = curve_fit(NFW_profile,R,rho,sigma=err,absolute_sigma=True,bounds=([0,0],[4,50]))
                 pcov    = NFW_out[1]
                 perr    = np.sqrt(np.diag(pcov))
                 e_R200  = perr[0]

@@ -137,7 +137,7 @@ class Sigma_fit:
                 chired  = chi_red(ajuste,Sigma,err,2)	
                 
                 # compute residuals Eq6-Meneghetti et al 2014
-                res     = np.sqrt(chi_red(np.log10(ajuste),np.log10(Sigma),np.ones(len(rho)),1))
+                res     = np.sqrt(chi_red(np.log10(ajuste),np.log10(Sigma),np.ones(len(Sigma)),1))
 
                 
                 yplot   = NFW_profile(xplot,R200,c200)
@@ -181,7 +181,7 @@ class Sigma_fit:
                 e_c200 = 0.
                 
                 # compute residuals Eq6-Meneghetti et al 2014
-                res     = np.sqrt(chi_red(np.log10(ajuste),np.log10(Sigma),np.ones(len(rho)),0))
+                res     = np.sqrt(chi_red(np.log10(ajuste),np.log10(Sigma),np.ones(len(Sigma)),0))
 
             
             except:

@@ -232,7 +232,6 @@ def rho_NFW(R,z,M200,c200 = None,cosmo=cosmo):
     # Units M_sun/Mpc3
     return ro
 
-
 def quadrupole(R,z,M200,c200 = None,cosmo=cosmo):
    
     '''

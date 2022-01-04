@@ -197,8 +197,8 @@ def Sigma_NFW(R,z,M200,c200 = None,cosmo=cosmo):
     jota[m4] = np.interp(x[m4].astype(float64),[x1,x2],[j1,j2])
                 
     rs_m = R200/c200
-    kapak = (2.*rs_m*deltac*roc_mpc)/(1.e6**2)
-    # Units M_sun/pc2
+    kapak = (2.*rs_m*deltac*roc_mpc)
+    # Units M_sun/Mpc2
     return kapak*jota
     
 def rho_NFW(R,z,M200,c200 = None,cosmo=cosmo):			

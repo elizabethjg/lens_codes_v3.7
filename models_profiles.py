@@ -314,7 +314,7 @@ def Delta_Sigma_NFW_2h(R,z,M200,c200,cosmo_params):
     
     # Outer term integrated up to 50Mpc (Luo et al. 2017, Niemic et al 2017)
     ds_in  = pNFW.deltaSigmaInner(R*1.e3)
-    ds_out = pNFW.deltaSigmaOuter(R*1.e3, interpolate=False, accuracy=0.01, max_r_integrate=100e3)
+    ds_out =  pNFW.deltaSigmaOuter(R*1.e3, interpolate=False, interpolate_surface_density=False, accuracy=0.01, max_r_integrate=100e3)
     
     return (ds_in + ds_out)/(1.e3**2)
 

@@ -290,12 +290,13 @@ def Sigma_NFW_2h(R,z,M200,c200,cosmo_params):
 
     b = bias.haloBias(M200, model = 'tinker10', z = z, mdef = '200c')
     
-    outer_term = profile_outer.OuterTermCorrelationFunction(z = z, bias = b)
-    pNFW = profile_nfw.NFWProfile(M = M200, mdef = '200c', z = z, c = c200, outer_terms = [outer_term])    
+    outer_term1 = profile_outer.OuterTermCorrelationFunction(z = z, bias = b)
+    outer_term2 = profile_outer.OuterTermMeanDensity(z = z)
+    pNFW = profile_nfw.NFWProfile(M = M200, mdef = '200c', z = z, c = c200, outer_terms = [outer_term1,outer_term2])    
     
     # Outer term integrated up to 50Mpc (Luo et al. 2017, Niemic et al 2017)
-    s_in  = pNFW.surfaceDensityInner(R*1.e3)
-    s_out = pNFW.surfaceDensityOuter(R*1.e3, interpolate=False, accuracy=0.01, max_r_integrate=100e3)
+    s_in2  = pNFW.surfaceDensityInner(R*1.e3)
+    s_out2 = pNFW.surfaceDensityOuter(R*1.e3, interpolate=False, accuracy=0.01, max_r_integrate=100e3)
     
     return (s_in + s_out)/(1.e3**2)
 
@@ -314,9 +315,48 @@ def Delta_Sigma_NFW_2h(R,z,M200,c200,cosmo_params):
     
     # Outer term integrated up to 50Mpc (Luo et al. 2017, Niemic et al 2017)
     ds_in  = pNFW.deltaSigmaInner(R*1.e3)
-    ds_out =  pNFW.deltaSigmaOuter(R*1.e3, interpolate=False, interpolate_surface_density=False, accuracy=0.01, max_r_integrate=100e3)
+    ds_out = pNFW.deltaSigmaOuter(R*1.e3, interpolate=False, interpolate_surface_density=False, accuracy=0.01, max_r_integrate=100e3)
     
     return (ds_in + ds_out)/(1.e3**2)
+
+def Sigma_NFW_only2h(R,z,M200,c200,cosmo_params):
+    
+    from colossus.lss import bias
+    from colossus.halo import profile_nfw
+    from colossus.halo import profile_outer
+    from colossus.cosmology import cosmology  
+    cosmology.addCosmology('MyCosmo', cosmo_params)
+    cosmo = cosmology.setCosmology('MyCosmo')
+
+    b = bias.haloBias(M200, model = 'tinker10', z = z, mdef = '200c')
+    
+    outer_term = profile_outer.OuterTermCorrelationFunction(z = z, bias = b)
+    pNFW = profile_nfw.NFWProfile(M = M200, mdef = '200c', z = z, c = c200, outer_terms = [outer_term])    
+    
+    # Outer term integrated up to 50Mpc (Luo et al. 2017, Niemic et al 2017)
+    s_in  = pNFW.surfaceDensityInner(R*1.e3)
+    s_out = pNFW.surfaceDensityOuter(R*1.e3, interpolate=False, accuracy=0.01, max_r_integrate=100e3)
+    
+    return (s_out)/(1.e3**2)
+
+def Delta_Sigma_NFW_only2h(R,z,M200,c200,cosmo_params):
+    from colossus.lss import bias
+    from colossus.halo import profile_nfw
+    from colossus.halo import profile_outer
+    from colossus.cosmology import cosmology  
+    cosmology.addCosmology('MyCosmo', cosmo_params)
+    cosmo = cosmology.setCosmology('MyCosmo')
+
+    b = bias.haloBias(M200, model = 'tinker10', z = z, mdef = '200c')
+    
+    outer_term = profile_outer.OuterTermCorrelationFunction(z = z, bias = b)
+    pNFW = profile_nfw.NFWProfile(M = M200, mdef = '200c', z = z, c = c200, outer_terms = [outer_term])    
+    
+    # Outer term integrated up to 50Mpc (Luo et al. 2017, Niemic et al 2017)
+    ds_in  = pNFW.deltaSigmaInner(R*1.e3)
+    ds_out = pNFW.deltaSigmaOuter(R*1.e3, interpolate=False, interpolate_surface_density=False, accuracy=0.01, max_r_integrate=100e3)
+    
+    return (ds_out)/(1.e3**2)
 
 def GAMMA_components_2h(R,z,ellip,M200,c200,cosmo_params):
    
@@ -349,6 +389,36 @@ def GAMMA_components_2h(R,z,ellip,M200,c200,cosmo_params):
     
     return [gt2,gx2]
 
+def GAMMA_components_only2h(R,z,ellip,M200,c200,cosmo_params):
+   
+    '''
+    Quadrupole term defined as (d(Sigma)/dr)*r
+    
+    '''
+    
+    def monopole(R):
+        return Sigma_NFW_only2h(R,z,M200,c200,cosmo_params)
+    
+    m0p = derivative(monopole,R,dx=1e-5)
+    q   =  m0p*R
+    
+    '''
+    vU_Eq10
+    
+    '''
+    
+    integral = []
+    for r in R:
+        argumento = lambda x: (x**3)*monopole(x)
+        integral += [integrate.quad(argumento, 0, r, epsabs=1.e-01, epsrel=1.e-01)[0]]
+        
+    p2 = integral*(-2./(R**2))
+    m  = monopole(R)
+    
+    gt2 = ellip*((-6*p2/R**2) - 2.*m + q)
+    gx2 = ellip*((-6*p2/R**2) - 4.*m)
+    
+    return [gt2,gx2]
 
 
 def Sigma_NFW_miss(R,z,M200,s_off = None, tau = 0.2,

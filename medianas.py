@@ -5,12 +5,8 @@ import matplotlib.pyplot as plt
 import pylab as pylab
 import time
 from scipy.optimize import curve_fit
-from matplotlib import rc
-rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
 ## for Palatino and other serif fonts use:
 #rc('font',**{'family':'serif','serif':['Palatino']})
-rc('text', usetex=True)
-matplotlib.rcParams.update({'font.size': 12})
 
 def separate_medianas(x,y,plot = True,label_x ='r',label_y = 'y',out_plot = 'plot.eps'):
 
@@ -39,8 +35,7 @@ def separate_medianas(x,y,plot = True,label_x ='r',label_y = 'y',out_plot = 'plo
 	
 	if plot:
 		
-		rcParams['figure.figsize'] =10.,10.
-		
+	
 		fig = plt.figure(figsize=(6,6))
 		fig.subplots_adjust(hspace=0,wspace=0)
 		

@@ -22,15 +22,16 @@ class Sigma_fit:
         cin = np.min([10,cin])
 
 
-        xplot   = np.arange(0.001,R.max()+1.,0.001)
+        bines = np.round(np.logspace(np.log10(100),np.log10(10000),num=41),0)
+        xplot = (bines[:-1] + np.diff(bines)*0.5)*1.e-3
         
         if model == 'NFW':
 
-            p = profile_nfw.NFWProfile(M = Min, c = cin, z = z, mdef = '200c')
+            pmodel = profile_nfw.NFWProfile(M = Min, c = cin, z = z, mdef = '200c')
             
         elif model == 'Einasto':
             
-            p = profile_einasto.EinastoProfile(M = Min, c = cin, z = z, mdef = '200c')
+            pmodel = profile_einasto.EinastoProfile(M = Min, c = cin, z = z, mdef = '200c')
             
 
         try:
@@ -39,7 +40,7 @@ class Sigma_fit:
             
             if model == 'NFW':
                 
-                out = p.fit(R*1000., Sigma/(1.e3**2), 'Sigma', q_err = err/(1.e3**2), tolerance = 1.e-04,verbose=False)
+                out = pmodel.fit(R*1000., Sigma*(1.e3**2), 'Sigma', q_err = err*(1.e3**2), tolerance = 1.e-04,verbose=False)
                 
                 rhos,rs = out['x']
                 prof = profile_nfw.NFWProfile(rhos = rhos, rs = rs)
@@ -49,10 +50,10 @@ class Sigma_fit:
             elif model == 'Einasto':
                 
                 if fit_alpha:
-                    out = p.fit(R*1000., Sigma/(1.e3**2), 'Sigma', q_err = err/(1.e3**2), tolerance = 1.e-04,verbose=False)
+                    out = pmodel.fit(R*1000., Sigma*(1.e3**2), 'Sigma', q_err = err*(1.e3**2), tolerance = 1.e-04,verbose=False)
                     rhos,rs,alpha = out['x']
                 else:
-                    out = p.fit(R*1000., Sigma/(1.e3**2), 'Sigma', q_err = err/(1.e3**2), tolerance = 1.e-04,verbose=False,mask=[True,True,False])
+                    out = pmodel.fit(R*1000., Sigma*(1.e3**2), 'Sigma', q_err = err*(1.e3**2), tolerance = 1.e-04,verbose=False,mask=[True,True,False])
                     rhos,rs = out['x']
                     alpha = p.par['alpha']
                 
@@ -60,8 +61,8 @@ class Sigma_fit:
                 prof = profile_einasto.EinastoProfile(rhos = rhos, rs = rs, alpha = alpha)
                 Ndoff = float(BIN - 3)
             
-            ajuste = prof.surfaceDensity(R*1000.)*(1.e3**2)
-            yplot  = prof.surfaceDensity(xplot*1000.)*(1.e3**2)
+            ajuste = prof.surfaceDensity(R*1000.)/(1.e3**2)
+            yplot  = prof.surfaceDensity(xplot*1000.)/(1.e3**2)
             
             
             
@@ -85,6 +86,7 @@ class Sigma_fit:
         self.c200 = c200
         self.alpha = alpha
 
+
 class Delta_Sigma_fit:
 	# R en Mpc, Sigma M_Sun/Mpc2
 	
@@ -96,8 +98,8 @@ class Delta_Sigma_fit:
         cin = np.max([1,cin])
         cin = np.min([10,cin])
 
-
-        xplot   = np.arange(0.001,R.max()+1.,0.001)
+        bines = np.round(np.logspace(np.log10(100),np.log10(10000),num=41),0)
+        xplot = (bines[:-1] + np.diff(bines)*0.5)*1.e-3
         
         if model == 'NFW':
 
@@ -126,17 +128,18 @@ class Delta_Sigma_fit:
                 if fit_alpha:
                     out = pmodel.fit(R*1000., DSigma*(1.e3**2), 'DeltaSigma', q_err = err*(1.e3**2), tolerance = 1.e-04,verbose=False)
                     rhos,rs,alpha = out['x']
+                    Ndoff = float(BIN - 2)
                 else:
                     out = pmodel.fit(R*1000., DSigma*(1.e3**2), 'DeltaSigma', q_err = err*(1.e3**2), tolerance = 1.e-04,verbose=False,mask=[True,True,False])
                     rhos,rs = out['x']
                     alpha = p.par['alpha']
-                
+                    Ndoff = float(BIN - 3)
                 
                 prof = profile_einasto.EinastoProfile(rhos = rhos, rs = rs, alpha = alpha)
-                Ndoff = float(BIN - 3)
+                
             
-            ajuste = prof.surfaceDensity(R*1000.)/(1.e3**2)
-            yplot  = prof.surfaceDensity(xplot*1000.)/(1.e3**2)
+            ajuste = prof.deltaSigma(R*1000.)/(1.e3**2)
+            yplot  = prof.deltaSigma(xplot*1000.)/(1.e3**2)
             
             
             
@@ -233,3 +236,4 @@ class rho_fit:
         self.M200 = M200
         self.c200 = c200
         self.alpha = alpha
+

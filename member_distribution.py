@@ -24,7 +24,7 @@ def projected_coodinates(x,y,z,xc,yc,zc):
      return xp,yp
 
 
-def compute_axis(x,y,z,w = None):
+def compute_axis(x,y,z,xp,yp,w = None):
      
      '''
      
@@ -32,6 +32,9 @@ def compute_axis(x,y,z,w = None):
      according to the moment of inertia
      (INPUT)
      x,y,z 3D coordinates arrays of len(N)
+           wher N is the total number of particles
+
+     xp,yp 2D coordinates arrays of len(N)
            wher N is the total number of particles
            
      w     len(N) array with weights, if not define
@@ -76,12 +79,7 @@ def compute_axis(x,y,z,w = None):
      
      # -----------------------------------------------
      # COMPUTE projected quantities
-     
-     # define centre according to the particle positions
-     
-     # compute projected coordinates
-     xp,yp = projected_coodinates(x,y,z,xc,yc,zc)
-     
+          
      T2D = np.zeros((2,2))
      
      T2D[0,0] = np.sum(w*xp**2)/np.sum(w)

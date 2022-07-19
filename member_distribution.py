@@ -47,21 +47,24 @@ def compute_axis(x,y,z,xp,yp,w = None,wp = None):
      if not np.all(w):
           w = np.ones(len(x))
 
+     if not np.all(wp):
+          wp = np.ones(len(xp))
+
      # COMPUTE 3D Tensor
 
      T3D = np.zeros((3,3))
 
-     T3D[0,0] = np.sum(w*x**2)/np.sum(w)
-     T3D[0,1] = np.sum(w*x*y)/np.sum(w)
-     T3D[0,2] = np.sum(w*x*z)/np.sum(w)
+     T3D[0,0] = np.sum(w*x**2)
+     T3D[0,1] = np.sum(w*x*y)
+     T3D[0,2] = np.sum(w*x*z)
 
-     T3D[1,0] = np.sum(w*y*x)/np.sum(w)     
-     T3D[1,1] = np.sum(w*y**2)/np.sum(w)
-     T3D[1,2] = np.sum(w*y*z)/np.sum(w)
+     T3D[1,0] = np.sum(w*y*x)
+     T3D[1,1] = np.sum(w*y**2)
+     T3D[1,2] = np.sum(w*y*z)
 
-     T3D[2,0] = np.sum(w*z*x)/np.sum(w)
-     T3D[2,1] = np.sum(w*z*y)/np.sum(w)
-     T3D[2,2] = np.sum(w*z**2)/np.sum(w)
+     T3D[2,0] = np.sum(w*z*x)
+     T3D[2,1] = np.sum(w*z*y)
+     T3D[2,2] = np.sum(w*z**2)
 
      w3d,v3d =np.linalg.eig(T3D)
 
@@ -74,10 +77,10 @@ def compute_axis(x,y,z,xp,yp,w = None,wp = None):
           
      T2D = np.zeros((2,2))
      
-     T2D[0,0] = np.sum(wp*xp**2)/np.sum(wp)
-     T2D[0,1] = np.sum(wp*xp*yp)/np.sum(wp)
-     T2D[1,0] = np.sum(wp*xp*yp)/np.sum(wp)
-     T2D[1,1] = np.sum(wp*yp**2)/np.sum(wp)
+     T2D[0,0] = np.sum(wp*xp**2)
+     T2D[0,1] = np.sum(wp*xp*yp)
+     T2D[1,0] = np.sum(wp*xp*yp)
+     T2D[1,1] = np.sum(wp*yp**2)
      
      w2d,v2d =np.linalg.eig(T2D)
      

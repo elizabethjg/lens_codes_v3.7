@@ -24,7 +24,7 @@ def projected_coodinates(x,y,z,xc,yc,zc):
      return xp,yp
 
 
-def compute_axis(x,y,z,xp,yp,w = None):
+def compute_axis(x,y,z,xp,yp,w = None,wp = None):
      
      '''
      
@@ -46,14 +46,6 @@ def compute_axis(x,y,z,xp,yp,w = None):
      
      if not np.all(w):
           w = np.ones(len(x))
-
-     xc = np.average(x,weights=w)
-     yc = np.average(y,weights=w)
-     zc = np.average(z,weights=w)
-
-     x = x - xc
-     y = y - yc
-     z = z - zc
 
      # COMPUTE 3D Tensor
 
@@ -82,10 +74,10 @@ def compute_axis(x,y,z,xp,yp,w = None):
           
      T2D = np.zeros((2,2))
      
-     T2D[0,0] = np.sum(w*xp**2)/np.sum(w)
-     T2D[0,1] = np.sum(w*xp*yp)/np.sum(w)
-     T2D[1,0] = np.sum(w*xp*yp)/np.sum(w)
-     T2D[1,1] = np.sum(w*yp**2)/np.sum(w)
+     T2D[0,0] = np.sum(wp*xp**2)/np.sum(wp)
+     T2D[0,1] = np.sum(wp*xp*yp)/np.sum(wp)
+     T2D[1,0] = np.sum(wp*xp*yp)/np.sum(wp)
+     T2D[1,1] = np.sum(wp*yp**2)/np.sum(wp)
      
      w2d,v2d =np.linalg.eig(T2D)
      

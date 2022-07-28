@@ -45,9 +45,9 @@ def separate_medianas(x,y,plot = True,label_x ='r',label_y = 'y',out_plot = 'plo
 		ax_marg_x = fig.add_subplot(gs[0,0:3])
 		ax_marg_y = fig.add_subplot(gs[1:4,3])
 		
-		#ax_joint.plot(x[mabove],y[mabove],'r,',alpha = 0.8)
-		#ax_joint.plot(x[~mabove],y[~mabove],'b,', alpha = 0.8)
-		ax_joint.plot(x,y,'C5,', alpha = 0.8)
+		ax_joint.plot(x[mabove],y[mabove],'C3.',alpha = 0.7)
+		ax_joint.plot(x[~mabove],y[~mabove],'C0.', alpha = 0.7)
+		# ax_joint.plot(x,y,'C5,', alpha = 0.8)
 		#ax_joint.plot(x_mean,y_mean,'k.', alpha = 0.8)
 		ax_joint.plot(x,m*x+n,'k')
 		ax_joint.set_xlabel(label_x,fontsize=14)
@@ -63,7 +63,7 @@ def separate_medianas(x,y,plot = True,label_x ='r',label_y = 'y',out_plot = 'plo
 		
 		plt.setp(ax_marg_x.get_xticklabels(), visible=False)
 		plt.setp(ax_marg_y.get_yticklabels(), visible=False)
-		plt.savefig(out_plot, format='eps',bbox_inches='tight')
+		plt.savefig(out_plot, format='pdf',bbox_inches='tight')
 		plt.show()
 	
 	return x_mean,y_mean,m,n,mabove

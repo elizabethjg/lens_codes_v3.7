@@ -45,7 +45,7 @@ def separate_medianas(x,y,plot = True,label_x ='r',label_y = 'y',out_plot = 'plo
 		ax_marg_x = fig.add_subplot(gs[0,0:3])
 		ax_marg_y = fig.add_subplot(gs[1:4,3])
 		
-		ax_joint.plot(x[mabove],y[mabove],'C3.',alpha = 0.7)
+		ax_joint.plot(x[mabove],y[mabove],'.',color='crimson',alpha = 0.7)
 		ax_joint.plot(x[~mabove],y[~mabove],'C0.', alpha = 0.7)
 		# ax_joint.plot(x,y,'C5,', alpha = 0.8)
 		#ax_joint.plot(x_mean,y_mean,'k.', alpha = 0.8)
@@ -54,10 +54,12 @@ def separate_medianas(x,y,plot = True,label_x ='r',label_y = 'y',out_plot = 'plo
 		ax_joint.set_ylabel(label_y,fontsize=14)
 		
 		
-		ax_marg_x.hist(x,50,histtype='step',stacked=True,fill=False,color='k')
+		ax_marg_x.hist(x[mabove],50,histtype='step',stacked=True,fill=False,color='crimson',lw=2)
+		ax_marg_x.hist(x[~mabove],50,histtype='step',stacked=True,fill=False,color='C0',lw=2)
 		ax_marg_x.set_ylabel(r'$N$',fontsize=14)
 		
-		ax_marg_y.hist(y,50,orientation="horizontal",histtype='step',stacked=True,fill=False,color='k')
+		ax_marg_y.hist(y[mabove],50,orientation="horizontal",histtype='step',stacked=True,fill=False,color='crimson',lw=2)
+		ax_marg_y.hist(y[~mabove],50,orientation="horizontal",histtype='step',stacked=True,fill=False,color='C0',lw=2)
 		ax_marg_y.set_xlabel(r'$N$',fontsize=14)
 		
 		

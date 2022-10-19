@@ -269,11 +269,11 @@ def Sigma_NFW_2h(R,z,M200,c200,cosmo_params=params,terms='1h'):
         s_in  = pNFW.surfaceDensityInner(R*1.e3)
         s = s_in
     elif terms == '2h':
-        s_out = pNFW.surfaceDensityOuter(R*1.e3, interpolate=False, accuracy=0.01, max_r_integrate=100e3)
+        s_out = pNFW.surfaceDensityOuter(R*1.e3, interpolate=False, accuracy=0.01, max_r_integrate=500e3)
         s = s_out
     elif terms == '1h+2h':
         s_in  = pNFW.surfaceDensityInner(R*1.e3)
-        s_out = pNFW.surfaceDensityOuter(R*1.e3, interpolate=False, accuracy=0.01, max_r_integrate=100e3)
+        s_out = pNFW.surfaceDensityOuter(R*1.e3, interpolate=False, accuracy=0.01, max_r_integrate=500e3)
         s = s_in + s_out
     
     return s/(1.e3**2)
@@ -361,11 +361,10 @@ def Delta_Sigma_Ein_2h(R,z,M200,c200,alpha,cosmo_params=params,terms='1h'):
     
     return ds/(1.e3**2)
 
+def S2_quadrupole(R,z,M200,c200 = None,terms='1h',cosmo_params=params,pname='NFW',alpha=0.3):
 
-def GAMMA_components(R,z,ellip,M200,c200 = None,terms='1h',cosmo_params=params,pname='NFW',alpha=0.3):
-   
     '''
-    Quadrupole term defined as (d(Sigma)/dr)*r
+    Quadrupole term defined as -1.*(d(Sigma)/dr)*r
     
     '''
     
@@ -374,6 +373,24 @@ def GAMMA_components(R,z,ellip,M200,c200 = None,terms='1h',cosmo_params=params,p
             return Sigma_NFW_2h(R,z,M200,c200,terms=terms,cosmo_params=cosmo_params)
         elif pname == 'Einasto':
             return Sigma_Ein_2h(R,z,M200,c200,alpha,terms=terms,cosmo_params=cosmo_params)
+    
+    m0p = derivative(monopole,R,dx=1e-4)
+    q   =  m0p*R
+
+    return -1.*q
+
+def GAMMA_components(R,z,ellip,M200,c200 = None,terms='1h',cosmo_params=params,pname='NFW',alpha=0.3):
+    
+    def monopole(R):
+        if pname == 'NFW':
+            return Sigma_NFW_2h(R,z,M200,c200,terms=terms,cosmo_params=cosmo_params)
+        elif pname == 'Einasto':
+            return Sigma_Ein_2h(R,z,M200,c200,alpha,terms=terms,cosmo_params=cosmo_params)
+
+    '''
+    Quadrupole term defined as (d(Sigma)/dr)*r
+    
+    '''
     
     m0p = derivative(monopole,R,dx=1e-4)
     q   =  m0p*R
@@ -395,6 +412,7 @@ def GAMMA_components(R,z,ellip,M200,c200 = None,terms='1h',cosmo_params=params,p
     gx = ellip*((-6*p2/R**2) - 4.*m)
     
     return [gt,gx]
+    
 
 ### MISCENTRED
 

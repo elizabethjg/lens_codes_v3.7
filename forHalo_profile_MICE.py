@@ -351,9 +351,12 @@ def partial_profile(RA0,DEC0,Z,angles,
         SIGMAwsum    = []
         DSIGMAwsum_T = []
         DSIGMAwsum_X = []
-        N_inbin = []
+        N_inbin     = []
+        
+        N_inbin_par = np.zeros((ndots,3))
+        N_inbin_per = np.zeros((ndots,3))
               
-        SIGMATcos_wsum = np.zeros((ndots,3))
+        SIGMAcos_wsum = np.zeros((ndots,3))
         SIGMApar_wsum  = np.zeros((ndots,3))
         SIGMAper_wsum  = np.zeros((ndots,3))
         GAMMATcos_wsum = np.zeros((ndots,3))
@@ -369,7 +372,8 @@ def partial_profile(RA0,DEC0,Z,angles,
                 DSIGMAwsum_T = np.append(DSIGMAwsum_T,et[mbin].sum())
                 DSIGMAwsum_X = np.append(DSIGMAwsum_X,ex[mbin].sum())
 
-                SIGMATcos_wsum[nbin,:] = np.sum((np.tile(k[mbin],(3,1))*np.cos(2.*at[mbin]).T),axis=1)
+                SIGMAcos_wsum[nbin,:]  = np.sum((np.tile(k[mbin],(3,1))*np.cos(2.*at[mbin]).T),axis=1)
+                
                 GAMMATcos_wsum[nbin,:] = np.sum((np.tile(et[mbin],(3,1))*np.cos(2.*at[mbin]).T),axis=1)
                 GAMMAXsin_wsum[nbin,:] = np.sum((np.tile(ex[mbin],(3,1))*np.sin(2.*at[mbin]).T),axis=1)
                 
@@ -384,11 +388,16 @@ def partial_profile(RA0,DEC0,Z,angles,
 
                 SIGMApar_wsum[nbin,:] = np.sum((np.tile(k[mbin],(3,1))*(~mper).T),axis=1)
                 SIGMAper_wsum[nbin,:] = np.sum((np.tile(k[mbin],(3,1))*mper.T),axis=1)
+                
+                N_inbin_par[nbin,:] = np.sum(~mper,axis=0)
+                N_inbin_per[nbin,:] = np.sum(mper,axis=0)
         
         output = {'SIGMAwsum':SIGMAwsum,'DSIGMAwsum_T':DSIGMAwsum_T,
-                   'DSIGMAwsum_X':DSIGMAwsum_X,'SIGMATcos_wsum': SIGMATcos_wsum,
+                   'DSIGMAwsum_X':DSIGMAwsum_X,'SIGMAcos_wsum': SIGMAcos_wsum,
+                   'SIGMApar_wsum':SIGMApar_wsum,'SIGMAper_wsum': SIGMAper_wsum,
                    'GAMMATcos_wsum': GAMMATcos_wsum, 'GAMMAXsin_wsum': GAMMAXsin_wsum,
                    'COS2_2theta_wsum':COS2_2theta,'SIN2_2theta_wsum':SIN2_2theta,
+                   'N_inbin_par':N_inbin_par,'N_inbin_per':N_inbin_per,
                    'N_inbin':N_inbin,'Ntot':Ntot}
         
         return output
@@ -648,12 +657,18 @@ def main(lcat, sample='pru',
             DSIGMAwsum_T = np.zeros((101,ndots)) 
             DSIGMAwsum_X = np.zeros((101,ndots))
                 
-            SIGMATcos_wsum = np.zeros((101,ndots,3))
+            SIGMAcos_wsum = np.zeros((101,ndots,3))
+            SIGMApar_wsum = np.zeros((101,ndots,3))
+            SIGMAper_wsum = np.zeros((101,ndots,3))
+            
             GAMMATcos_wsum = np.zeros((101,ndots,3))
             GAMMAXsin_wsum = np.zeros((101,ndots,3))
     
             COS2_2theta_wsum = np.zeros((101,ndots,3))
             SIN2_2theta_wsum = np.zeros((101,ndots,3))
+            
+            Ninbin_par = np.zeros((101,ndots,3))
+            Ninbin_per = np.zeros((101,ndots,3))
             
             # FUNCTION TO RUN IN PARALLEL
             partial = partial_profile_unpack
@@ -721,12 +736,18 @@ def main(lcat, sample='pru',
                             DSIGMAwsum_T += np.tile(profilesums['DSIGMAwsum_T'],(101,1))*km[:,:,0]
                             DSIGMAwsum_X += np.tile(profilesums['DSIGMAwsum_X'],(101,1))*km[:,:,0]
                             
-                            SIGMATcos_wsum += np.tile(profilesums['SIGMATcos_wsum'],(101,1,1))*km
+                            SIGMAcos_wsum  += np.tile(profilesums['SIGMAcos_wsum'],(101,1,1))*km
+                            SIGMApar_wsum  += np.tile(profilesums['SIGMApar_wsum'],(101,1,1))*km
+                            SIGMAper_wsum  += np.tile(profilesums['SIGMAper_wsum'],(101,1,1))*km
+
                             GAMMATcos_wsum += np.tile(profilesums['GAMMATcos_wsum'],(101,1,1))*km
                             GAMMAXsin_wsum += np.tile(profilesums['GAMMAXsin_wsum'],(101,1,1))*km
     
                             COS2_2theta_wsum += np.tile(profilesums['COS2_2theta_wsum'],(101,1,1))*km
                             SIN2_2theta_wsum += np.tile(profilesums['SIN2_2theta_wsum'],(101,1,1))*km
+
+                            Ninbin_par += np.tile(profilesums['N_inbin_par'],(101,1,1))*km
+                            Ninbin_per += np.tile(profilesums['N_inbin_per'],(101,1,1))*km
                         
                 
                 t2 = time.time()
@@ -740,7 +761,7 @@ def main(lcat, sample='pru',
         # AVERAGE LENS PARAMETERS AND SAVE IT IN HEADER
         
         zmean        = np.average(L.z,weights=Ntot)
-        lM_mean      = np.log10(np.average(10**L.lgM,weights=Ntot))
+        lM_mean      = np.log10(np.average(10**L.lgMEin_S,weights=Ntot))
         # c200_mean    = np.average(L.cNFW_S,weights=Ntot)
         # lM200_mean   = np.log10(np.average(10**L.lgMNFW_S,weights=Ntot))
         
@@ -833,19 +854,34 @@ def main(lcat, sample='pru',
             DSigma_T  = (DSIGMAwsum_T/Ninbin)
             DSigma_X  = (DSIGMAwsum_X/Ninbin)
             
-            SIGMA_Tcos = (SIGMATcos_wsum/COS2_2theta_wsum).transpose(1,2,0)
+            SIGMA_cos  = (SIGMAcos_wsum/COS2_2theta_wsum).transpose(1,2,0)
+            SIGMA_par  = (SIGMApar_wsum/Ninbin_par).transpose(1,2,0)
+            SIGMA_per  = (SIGMAper_wsum/Ninbin_per).transpose(1,2,0)
+            
             GAMMA_Tcos = (GAMMATcos_wsum/COS2_2theta_wsum).transpose(1,2,0)
             GAMMA_Xsin = (GAMMAXsin_wsum/SIN2_2theta_wsum).transpose(1,2,0)
             
             # COMPUTE COVARIANCE
     
             COV_S   = cov_matrix(Sigma[1:,:])
-            COV_St  = cov_matrix(DSigma_T[1:,:])
-            COV_Sx  = cov_matrix(DSigma_X[1:,:])
+            COV_DSt  = cov_matrix(DSigma_T[1:,:])
+            COV_DSx  = cov_matrix(DSigma_X[1:,:])
             
-            COV_Stc = cov_matrix(SIGMA_Tcos[:,0,1:].T)
-            COV_St  = cov_matrix(SIGMA_Tcos[:,1,1:].T)
-            COV_Str = cov_matrix(SIGMA_Tcos[:,2,1:].T)
+            COV_Scc = cov_matrix(SIGMA_cos[:,0,1:].T)
+            COV_Sc  = cov_matrix(SIGMA_cos[:,1,1:].T)
+            COV_Scr = cov_matrix(SIGMA_cos[:,2,1:].T)
+
+            COV_Spar_c = cov_matrix(SIGMA_par[:,0,1:].T)
+            COV_Spar   = cov_matrix(SIGMA_par[:,1,1:].T)
+            COV_Spar_r = cov_matrix(SIGMA_par[:,2,1:].T)
+
+            COV_Sper_c = cov_matrix(SIGMA_per[:,0,1:].T)
+            COV_Sper   = cov_matrix(SIGMA_per[:,1,1:].T)
+            COV_Sper_r = cov_matrix(SIGMA_per[:,2,1:].T)
+
+            COV_Stc = cov_matrix(SIGMA_cos[:,0,1:].T)
+            COV_St  = cov_matrix(SIGMA_cos[:,1,1:].T)
+            COV_Str = cov_matrix(SIGMA_cos[:,2,1:].T)
 
             COV_Gtc = cov_matrix(GAMMA_Tcos[:,0,1:].T)
             COV_Gt  = cov_matrix(GAMMA_Tcos[:,1,1:].T)
@@ -861,9 +897,15 @@ def main(lcat, sample='pru',
                     fits.Column(name='Sigma', format='E', array=Sigma[0]),
                     fits.Column(name='DSigma_T', format='E', array=DSigma_T[0]),
                     fits.Column(name='DSigma_X', format='E', array=DSigma_X[0]),
-                    fits.Column(name='SIGMA_Tcos_control', format='E', array=SIGMA_Tcos[:,0,0]),
-                    fits.Column(name='SIGMA_Tcos', format='E', array=SIGMA_Tcos[:,1,0]),
-                    fits.Column(name='SIGMA_Tcos_reduced', format='E', array=SIGMA_Tcos[:,2,0]),
+                    fits.Column(name='SIGMA_cos_control', format='E', array=SIGMA_cos[:,0,0]),
+                    fits.Column(name='SIGMA_cos', format='E', array=SIGMA_cos[:,1,0]),
+                    fits.Column(name='SIGMA_cos_reduced', format='E', array=SIGMA_cos[:,2,0]),
+                    fits.Column(name='SIGMA_par_control', format='E', array=SIGMA_par[:,0,0]),
+                    fits.Column(name='SIGMA_par', format='E', array=SIGMA_par[:,1,0]),
+                    fits.Column(name='SIGMA_par_reduced', format='E', array=SIGMA_par[:,2,0]),
+                    fits.Column(name='SIGMA_per_control', format='E', array=SIGMA_per[:,0,0]),
+                    fits.Column(name='SIGMA_per', format='E', array=SIGMA_per[:,1,0]),
+                    fits.Column(name='SIGMA_per_reduced', format='E', array=SIGMA_per[:,2,0]),
                     fits.Column(name='GAMMA_Tcos_control', format='E', array=GAMMA_Tcos[:,0,0]),
                     fits.Column(name='GAMMA_Tcos', format='E', array=GAMMA_Tcos[:,1,0]),
                     fits.Column(name='GAMMA_Tcos_reduced', format='E', array=GAMMA_Tcos[:,2,0]),
@@ -873,12 +915,18 @@ def main(lcat, sample='pru',
                     fits.Column(name='Ninbin', format='E', array=Ninbin[0])]
                     
                         
-            table_cov = [fits.Column(name='COV_ST', format='E', array=COV_St.flatten()),
+            table_cov = [fits.Column(name='COV_DST', format='E', array=COV_DSt.flatten()),
                         fits.Column(name='COV_S', format='E', array=COV_S.flatten()),
-                        fits.Column(name='COV_SX', format='E', array=COV_Sx.flatten()),
-                        fits.Column(name='COV_ST_control', format='E', array=COV_Stc.flatten()),
-                        fits.Column(name='COV_ST', format='E', array=COV_St.flatten()),
-                        fits.Column(name='COV_ST_reduced', format='E', array=COV_Str.flatten()),
+                        fits.Column(name='COV_DSX', format='E', array=COV_DSx.flatten()),
+                        fits.Column(name='COV_Scos_control', format='E', array=COV_Scc.flatten()),
+                        fits.Column(name='COV_Scos', format='E', array=COV_Sc.flatten()),
+                        fits.Column(name='COV_Scos_reduced', format='E', array=COV_Scr.flatten()),
+                        fits.Column(name='COV_Spar_control', format='E', array=COV_Spar_c.flatten()),
+                        fits.Column(name='COV_Spar', format='E', array=COV_Spar.flatten()),
+                        fits.Column(name='COV_Spar_reduced', format='E', array=COV_Spar_r.flatten()),
+                        fits.Column(name='COV_Sper_control', format='E', array=COV_Sper_c.flatten()),
+                        fits.Column(name='COV_Sper', format='E', array=COV_Sper.flatten()),
+                        fits.Column(name='COV_Sper_reduced', format='E', array=COV_Sper_r.flatten()),
                         fits.Column(name='COV_GT_control', format='E', array=COV_Gtc.flatten()),
                         fits.Column(name='COV_GT', format='E', array=COV_Gt.flatten()),
                         fits.Column(name='COV_GT_reduced', format='E', array=COV_Gtr.flatten()),

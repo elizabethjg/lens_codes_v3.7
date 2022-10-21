@@ -775,7 +775,7 @@ def main(lcat, sample='pru',
         h = fits.Header()
         h.append(('N_LENSES',np.int(Nlenses)))
         h.append(('Lens cat',lcat))
-        h.append(('MICE version sources',vmice))
+        h.append(('MICE version sources 2.0'))
         h.append(('rs_min',np.round(rs_min,1)))
         h.append(('rs_max',np.round(rs_max,1)))
         h.append(('lM_min',np.round(lM_min,2)))

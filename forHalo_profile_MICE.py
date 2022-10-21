@@ -430,7 +430,7 @@ def main(lcat, sample='pru',
          R5s_min = 0., R5s_max = 100.,
          domap = False, RIN = 400., ROUT =5000.,
          ndots= 40, ncores=10, 
-         idlist= None, hcosmo=1.0, vmice = '2',
+         idlist= None, hcosmo=1.0, 
          addnoise = False, misalign = False, 
          miscen = False, soff = 0.3):
 

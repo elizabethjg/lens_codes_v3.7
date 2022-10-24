@@ -761,7 +761,7 @@ def main(lcat, sample='pru',
         # AVERAGE LENS PARAMETERS AND SAVE IT IN HEADER
         
         zmean        = np.average(L.z,weights=Ntot)
-        lM_mean      = np.log10(np.average(10**L.lgMEin_S,weights=Ntot))
+        lM_mean      = np.log10(np.average(10**L.lgMEin_rho,weights=Ntot))
         # c200_mean    = np.average(L.cNFW_S,weights=Ntot)
         # lM200_mean   = np.log10(np.average(10**L.lgMNFW_S,weights=Ntot))
         
@@ -942,7 +942,7 @@ def main(lcat, sample='pru',
         
         hdul = fits.HDUList([primary_hdu, tbhdu_pro, tbhdu_cov])
         
-        hdul.writeto(folder+output_file,overwrite=True)
+        hdul.writeto('../'+output_file,overwrite=True)
                 
         tfin = time.time()
         

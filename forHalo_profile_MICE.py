@@ -460,7 +460,9 @@ def main(lcat, sample='pru',
         ndots          (int) Number of bins of the profile
         ncores         (int) to run in parallel, number of cores
         h              (float) H0 = 100.*h
-               (bool) add misalignment with a normal distribution of 30deg
+        misaling       (bool or float) add misalignment with 
+                                       a normal distribution of misalign deg 
+                                       standard deviation
         miscen         (bool) add a miscentring for the 25percent of the halos
         addnoise       (bool) add shape noise
         soff         (float) dispersion of Rayleigh distribution for miscenter
@@ -484,7 +486,7 @@ def main(lcat, sample='pru',
                 # print(R5s_min,' <= R5s < ',R5s_max)
                 print('resNFW_S < ',resNFW_max)
                 print('h ',hcosmo)
-                print(' '+str(misalign))
+                print('misalign '+str(misalign))
         
         if addnoise:
             print('ADDING SHAPE NOISE')

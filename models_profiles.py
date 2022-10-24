@@ -298,11 +298,11 @@ def Sigma_Ein_2h(R,z,M200,c200,alpha,cosmo_params=params,terms='1h'):
         s_in  = p.surfaceDensityInner(R*1.e3)
         s = s_in
     elif terms == '2h':
-        s_out = p.surfaceDensityOuter(R*1.e3, interpolate=False, accuracy=0.01, max_r_integrate=100e3)
+        s_out = p.surfaceDensityOuter(R*1.e3, interpolate=False, accuracy=0.01, max_r_integrate=500e3)
         s = s_out
     elif terms == '1h+2h':
         s_in  = p.surfaceDensityInner(R*1.e3)
-        s_out = p.surfaceDensityOuter(R*1.e3, interpolate=False, accuracy=0.01, max_r_integrate=100e3)
+        s_out = p.surfaceDensityOuter(R*1.e3, interpolate=False, accuracy=0.01, max_r_integrate=500e3)
         s = s_in + s_out
     
     return s/(1.e3**2)

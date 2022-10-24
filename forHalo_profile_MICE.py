@@ -676,7 +676,7 @@ def main(lcat, sample='pru',
             partial = partial_profile_unpack
             
 
-        print('Saved in '+folder+output_file)
+        print('Saved in ../'+output_file)
                                    
         
         

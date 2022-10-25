@@ -145,7 +145,7 @@ T_max = 1.
 '''
 
 
-folder = '/home/elizabeth/MICE/HS-lensing/'
+folder = '/mnt/simulations/MICE/'
 S      = fits.open(folder+'MICE_sources_HSN_withextra.fits')[1].data
 
 if nback < 30.:

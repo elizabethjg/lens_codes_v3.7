@@ -248,6 +248,35 @@ def quadrupole(R,z,M200,c200 = None,cosmo=cosmo):
 
     return q
 
+def rho_NFW_2h(R,z,M200,c200,cosmo_params=params,terms='1h'):
+    
+    from colossus.lss import bias
+    from colossus.halo import profile_nfw
+    from colossus.halo import profile_outer
+    from colossus.cosmology import cosmology  
+    cosmology.addCosmology('MyCosmo', cosmo_params)
+    cosmo = cosmology.setCosmology('MyCosmo')
+
+    b = bias.haloBias(M200, model = 'tinker10', z = z, mdef = '200c')
+    
+    outer_term = profile_outer.OuterTermCorrelationFunction(z = z, bias = b)
+    pNFW = profile_nfw.NFWProfile(M = M200, mdef = '200c', z = z, c = c200, outer_terms = [outer_term])
+    
+    # Outer term integrated up to 100Mpc (Luo et al. 2017, Niemic et al 2017)
+    
+    if terms == '1h':
+        rho_in  = pNFW.density(R*1.e3)
+        rho = rho_in
+    elif terms == '2h':
+        rho_out = pNFW.densityOuter(R*1.e3, interpolate=False, accuracy=0.01, max_r_integrate=500e3)
+        rho = rho_out
+    elif terms == '1h+2h':
+        rho_in  = pNFW.density(R*1.e3)
+        rho_out = pNFW.densityOuter(R*1.e3, interpolate=False, accuracy=0.01, max_r_integrate=500e3)
+        rho = rho_in + rho_out
+    
+    return rho/(1.e3**2)
+
 
 def Sigma_NFW_2h(R,z,M200,c200,cosmo_params=params,terms='1h'):
     

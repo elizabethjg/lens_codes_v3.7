@@ -250,6 +250,11 @@ def quadrupole(R,z,M200,c200 = None,cosmo=cosmo):
 
 def rho_NFW_2h(R,z,M200,c200,cosmo_params=params,terms='1h'):
     
+    '''
+    3D NFW density from colossus
+    units Msun/pc3
+    '''
+    
     from colossus.lss import bias
     from colossus.halo import profile_nfw
     from colossus.halo import profile_outer
@@ -275,10 +280,15 @@ def rho_NFW_2h(R,z,M200,c200,cosmo_params=params,terms='1h'):
         rho_out = pNFW.densityOuter(R*1.e3, interpolate=False, accuracy=0.01, max_r_integrate=500e3)
         rho = rho_in + rho_out
     
-    return rho/(1.e3**2)
+    return rho/(1.e3**3)
 
 
 def Sigma_NFW_2h(R,z,M200,c200,cosmo_params=params,terms='1h'):
+
+    '''
+    projected NFW density from colossus
+    units Msun/pc2
+    '''
     
     from colossus.lss import bias
     from colossus.halo import profile_nfw
@@ -309,6 +319,12 @@ def Sigma_NFW_2h(R,z,M200,c200,cosmo_params=params,terms='1h'):
 
 def Sigma_Ein_2h(R,z,M200,c200,alpha,cosmo_params=params,terms='1h'):
     
+    '''
+    projected Ein density from colossus
+    units Msun/pc2
+    '''
+    
+    
     from colossus.lss import bias
     from colossus.halo import profile_einasto
     from colossus.halo import profile_outer
@@ -337,6 +353,13 @@ def Sigma_Ein_2h(R,z,M200,c200,alpha,cosmo_params=params,terms='1h'):
     return s/(1.e3**2)
 
 def Delta_Sigma_NFW_2h(R,z,M200,c200,cosmo_params=params,terms='1h'):
+    
+    '''
+    NFW contrast density from colossus
+    units Msun/pc2
+    '''
+    
+    
     from colossus.lss import bias
     from colossus.halo import profile_nfw
     from colossus.halo import profile_outer
@@ -364,6 +387,12 @@ def Delta_Sigma_NFW_2h(R,z,M200,c200,cosmo_params=params,terms='1h'):
     return ds/(1.e3**2)
 
 def Delta_Sigma_Ein_2h(R,z,M200,c200,alpha,cosmo_params=params,terms='1h'):
+    
+    '''
+    Einasto contrast density from colossus
+    units Msun/pc2
+    '''    
+    
     from colossus.lss import bias
     from colossus.halo import profile_einasto
     from colossus.halo import profile_outer

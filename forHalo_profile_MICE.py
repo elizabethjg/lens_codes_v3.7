@@ -612,6 +612,7 @@ def main(lcat, sample='pru',
             print('Maps have ',ndots,'pixels')
             print('up to ',ROUT,'kpc')
             
+            os.system('mkdir ../maps')
             output_file = 'maps/map_'+sample+'.fits'
 
             # Defining 2D bins
@@ -644,7 +645,7 @@ def main(lcat, sample='pru',
 
             print('Profile has ',ndots,'bins')
             print('from ',RIN,'kpc to ',ROUT,'kpc')
-
+            os.system('mkdir ../profiles')
             output_file = 'profiles/profile_'+sample+'.fits'
 
             # Defining radial bins

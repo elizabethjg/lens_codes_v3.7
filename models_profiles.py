@@ -251,6 +251,10 @@ def quadrupole(R,z,M200,c200 = None,cosmo=cosmo):
 def rho_NFW_2h(R,z,M200,c200,cosmo_params=params,terms='1h'):
     
     '''
+    R - radii [Mpc]
+    z - redshift 
+    M200 - M200c [M_sun]
+    
     3D NFW density from colossus
     units Msun/pc3
     '''

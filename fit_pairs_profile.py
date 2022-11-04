@@ -1,7 +1,4 @@
 import sys
-sys.path.append('/mnt/projects/lensing/lens_codes_v3.7')
-sys.path.append('/home/eli/lens_codes_v3.7')
-sys.path.append('/home/elizabeth/lens_codes_v3.7')
 import time
 import numpy as np
 from astropy.io import fits
@@ -11,7 +8,6 @@ import argparse
 from astropy.constants import G,c,M_sun,pc
 import emcee
 from models_profiles import *
-from fit_profiles_curvefit import *
 # import corner
 import os
 from colossus.cosmology import cosmology  
@@ -76,8 +72,9 @@ h       = profile[0].header
 p       = profile[1].data
 zmean   = h['Z_MEAN'] 
 
-
+'''
 ### compute dilution
+
 bines = np.logspace(np.log10(h['RIN']),np.log10(h['ROUT']),num=len(p)+1)
 area = np.pi*np.diff(bines**2)
 
@@ -92,7 +89,7 @@ p.DSigma_T = bcorr*p.DSigma_T
 p.DSigma_X = bcorr*p.DSigma_X
 p.error_DSigma_T = bcorr*p.error_DSigma_T
 p.error_DSigma_X = bcorr*p.error_DSigma_X
-
+'''
 
 def log_likelihood(logM, R, DS, eDS):
     

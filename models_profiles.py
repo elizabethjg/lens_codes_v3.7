@@ -1,6 +1,5 @@
 import sys, os
 import numpy as np
-from pylab import *
 from astropy.cosmology import LambdaCDM
 from scipy.misc import derivative
 from scipy import integrate

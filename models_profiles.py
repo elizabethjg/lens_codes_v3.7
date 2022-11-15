@@ -663,8 +663,8 @@ def DELTA_SIGMA_full(R,z,M200,c200,
                      cosmo_params=params):
                             
     DS_miss = Delta_Sigma_NFW_miss(R,z,M200,s_off,tau,c200,P_Roff,params)
-    DS_1h   = Delta_Sigma_2h(R,z,M200,c200,params,'1h')
-    DS_2h   = Delta_Sigma_2h(R,z,M200,c200,params,'2h')
+    DS_1h   = Delta_Sigma_NFW_2h(R,z,M200,c200,params,'1h')
+    DS_2h   = Delta_Sigma_NFW_2h(R,z,M200,c200,params,'2h')
     
     return pcc*(DS_1h) + (1.-pcc)*DS_miss + DS_2h
 

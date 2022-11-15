@@ -696,7 +696,7 @@ def DELTA_SIGMA_full_parallel(r,z,M200,c200,
     P_Roff = [P_Roff]*ncores
     cosmo  = [cosmo_params]*ncores
         
-    entrada = np.array([r_splitted,z,M200,s_off,tau,c200,P_Roff,cosmo]).T
+    entrada = np.array([r_splitted,z,M200,c200,s_off,tau,pcc,P_Roff,cosmo]).T
     
     pool = Pool(processes=(ncores))
     salida=np.array(pool.map(DELTA_SIGMA_full_unpack, entrada))

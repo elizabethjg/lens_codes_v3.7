@@ -695,6 +695,7 @@ def DELTA_SIGMA_full_parallel(r,z,M200,c200,
     c200   = [c200]*ncores
     P_Roff = [P_Roff]*ncores
     cosmo  = [cosmo_params]*ncores
+    pcc    = [pcc]*ncores
         
     entrada = np.array([r_splitted,z,M200,c200,s_off,tau,pcc,P_Roff,cosmo]).T
     

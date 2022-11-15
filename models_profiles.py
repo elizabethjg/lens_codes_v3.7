@@ -655,4 +655,56 @@ def Sigma_NFW_miss_parallel(r,z,M200,s_off = None, tau = 0.2,
         S_miss = np.append(S_miss,s)
             
     return S_miss
+    
+    
+def DELTA_SIGMA_full(R,z,M200,c200,
+                     s_off = None, tau = 0.2,
+                     pcc = 0.7, P_Roff = Rayleigh, 
+                     cosmo_params=params):
+                            
+    DS_miss = Delta_Sigma_NFW_miss(R,z,M200,s_off,tau,c200,P_Roff,params)
+    DS_1h   = Delta_Sigma_2h(R,z,M200,c200,params,'1h')
+    DS_2h   = Delta_Sigma_2h(R,z,M200,c200,params,'2h')
+    
+    return pcc*(DS_1h) + (1.-pcc)*DS_miss + DS_2h
 
+
+def DELTA_SIGMA_full_unpack(minput):
+	return DELTA_SIGMA_full(*minput)
+
+def DELTA_SIGMA_full_parallel(r,z,M200,c200,
+                                  s_off = None, tau = 0.2,
+                                  pcc = 0.7, P_Roff = Rayleigh, 
+                                  cosmo_params=params,ncores=4):	
+	
+    if ncores > len(r):
+        ncores = len(r)
+    
+    
+    slicer = int(round(len(r)/float(ncores), 0))
+    slices = ((np.arange(ncores-1)+1)*slicer).astype(int)
+    slices = slices[(slices <= len(r))]
+    r_splitted = np.split(r,slices)
+    
+    ncores = len(r_splitted)
+    
+    z      = [z]*ncores
+    M200   = [M200]*ncores
+    s_off  = [s_off]*ncores
+    tau    = [tau]*ncores
+    c200   = [c200]*ncores
+    P_Roff = [P_Roff]*ncores
+    cosmo  = [cosmo_params]*ncores
+        
+    entrada = np.array([r_splitted,z,M200,s_off,tau,c200,P_Roff,cosmo]).T
+    
+    pool = Pool(processes=(ncores))
+    salida=np.array(pool.map(DELTA_SIGMA_full_unpack, entrada))
+    pool.terminate()
+
+    DS_full = np.array([])
+    
+    for s in salida:
+        DS_full = np.append(DS_full,s)
+            
+    return DS_full

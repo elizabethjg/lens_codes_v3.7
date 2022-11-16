@@ -93,7 +93,7 @@ def log_probability(data_model, R, DS, eDS):
     logM,pcc = data_model
     
     if 13. < logM < 15. and 0.5 < pcc < 1.:
-        return log_likelihood(logM, R, DS, eDS)
+        return log_likelihood(data_model, R, DS, eDS)
         
     return -np.inf
 

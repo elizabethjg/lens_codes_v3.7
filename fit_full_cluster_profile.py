@@ -71,7 +71,7 @@ profile = fits.open(folder+file_name)
 h       = profile[1].header
 p       = profile[1].data
 zmean   = h['Z_MEAN'] 
-lmean   = 33.##h['L_MEAN']
+lmean   = h['L_MEAN']
 
 Rl = (lmean/100.)**(0.2)
 s_off = 0.2 * Rl

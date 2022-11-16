@@ -14,7 +14,7 @@ cvel = c.value;   # Speed of light (m.s-1)
 G    = G.value;   # Gravitational constant (m3.kg-1.s-2)
 pc   = pc.value # 1 pc (m)
 Msun = M_sun.value # Solar mass (kg)
-params = {'flat': True, 'H0': 70.0, 'Om0': 0.25, 'Ob0': 0.044, 'sigma8': 0.8, 'ns': 0.95}
+params = {'flat': True, 'H0': 70.0, 'Om0': 0.3, 'Ob0': 0.044, 'sigma8': 0.8, 'ns': 0.95}
 
 def g(x,disp): 
     return (1./(np.sqrt(2*np.pi)*disp))*np.exp(-0.5*(x/disp)**2)
@@ -50,7 +50,7 @@ def c200_duffy(M,z):
     #calculo de c usando la relacion de Duffy et al 2008
     return 5.71*((M/2.e12)**-0.084)*((1.+z)**-0.47)
     
-def R200_NFW(M200,z,cosmo=cosmo):	
+def R200_NFW(M200,z,cosmo):	
     '''
     
     Returns the R_200
@@ -66,11 +66,15 @@ def R200_NFW(M200,z,cosmo=cosmo):
     '''
 
     roc_mpc = cosmo.critical_density(z).to(u.kg/(u.Mpc)**3).value
+    # from colossus.cosmology import cosmology  
+    # cosmology.addCosmology('MyCosmo', cosmo_params)
+    # cosmo = cosmology.setCosmology('MyCosmo')
+    # roc_mpc = cosmo.rho_c(z)*(Msun*(1.e3**3))
     
     return ((M200*(3.0*Msun))/(800.0*np.pi*roc_mpc))**(1./3.)
     
 
-def M200_NFW(R200,z,cosmo=cosmo):	
+def M200_NFW(R200,z,cosmo):	
     
     '''
     
@@ -87,6 +91,11 @@ def M200_NFW(R200,z,cosmo=cosmo):
     '''
 
     roc_mpc = cosmo.critical_density(z).to(u.kg/(u.Mpc)**3).value
+    
+    # from colossus.cosmology import cosmology  
+    # cosmology.addCosmology('MyCosmo', cosmo_params)
+    # cosmo = cosmology.setCosmology('MyCosmo')
+    # roc_mpc = cosmo.rho_c(z)/(1.e3**3)
     
     return (800.0*np.pi*roc_mpc*(R200**3))/(3.0*Msun)
 
@@ -159,13 +168,18 @@ def Sigma_NFW(R,z,M200,c200 = None,cosmo=cosmo):
     m = R == 0.
     R[m] = 1.e-8  
 
-    
+
+    # from colossus.cosmology import cosmology  
+    # cosmology.addCosmology('MyCosmo', cosmo_params)
+    # cosmo = cosmology.setCosmology('MyCosmo')
+    # roc_mpc = cosmo.rho_c(z)*(1.e3**3)
+
     R200 = R200_NFW(M200,z,cosmo)
     
     roc_mpc = cosmo.critical_density(z).to(u.Msun/(u.Mpc)**3).value
     
     if not c200:
-        c200 = c200_duffy(M200*cosmo.h,z)
+        c200 = c200_duffy(M200*cosmo.H0/100.,z)
     
     ####################################################
     
@@ -530,7 +544,8 @@ def Sigma_NFW_miss(R,z,M200,s_off = None, tau = 0.2,
 
 
     def SNFW(r):
-        return Sigma_NFW_2h(r,z,M200,c200,cosmo_params=cosmo_params,terms='1h')
+        # return Sigma_NFW_2h(r,z,M200,c200,cosmo_params=cosmo_params,terms='1h')
+        return Sigma_NFW(r,z,M200,c200)/1.e12
 
     def S_RRs(Rs,R):
         # F_Eq13
@@ -557,14 +572,12 @@ def Delta_Sigma_NFW_miss(R,z,M200,s_off = None, tau = 0.2,
     Misscentred density contraste for NFW
     
     '''
-  
-    R200 = R200_NFW(M200,z,cosmo)
-    
         
     if not c200:
         c200 = c200_duffy(M200*cosmo.h,z)
 
     if not s_off:
+        R200 = R200_NFW(M200,z,params)
         s_off = tau*R200
 
 

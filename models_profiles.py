@@ -415,7 +415,7 @@ def Delta_Sigma_NFW_2h_parallel(r,z,M200,c200,terms='1h',
     
     slicer = int(round(len(r)/float(ncores), 0))
     slices = ((np.arange(ncores-1)+1)*slicer).astype(int)
-    slices = slices[(slices <= len(r))]
+    slices = slices[(slices < len(r))]
     r_splitted = np.split(r,slices)
     
     ncores = len(r_splitted)
@@ -544,7 +544,7 @@ def Sigma_NFW_miss(R,z,M200,s_off = None, tau = 0.2,
 
 
     def SNFW(r):
-        # return Sigma_NFW_2h(r,z,M200,c200,cosmo_params=cosmo_params,terms='1h')
+        # return Sigma_NFW_2h(r,z,M200,c200,cosmo_params=params,terms='1h')
         return Sigma_NFW(r,z,M200,c200)/1.e12
 
     def S_RRs(Rs,R):
@@ -603,7 +603,7 @@ def Delta_Sigma_NFW_miss_parallel(r,z,M200,s_off = None, tau = 0.2,
     
     slicer = int(round(len(r)/float(ncores), 0))
     slices = ((np.arange(ncores-1)+1)*slicer).astype(int)
-    slices = slices[(slices <= len(r))]
+    slices = slices[(slices < len(r))]
     r_splitted = np.split(r,slices)
     
     ncores = len(r_splitted)
@@ -643,7 +643,7 @@ def Sigma_NFW_miss_parallel(r,z,M200,s_off = None, tau = 0.2,
     
     slicer = int(round(len(r)/float(ncores), 0))
     slices = ((np.arange(ncores-1)+1)*slicer).astype(int)
-    slices = slices[(slices <= len(r))]
+    slices = slices[(slices < len(r))]
     r_splitted = np.split(r,slices)
     
     ncores = len(r_splitted)
@@ -674,11 +674,12 @@ def DELTA_SIGMA_full(R,z,M200,c200,
                      s_off = None, tau = 0.2,
                      pcc = 0.7, P_Roff = Rayleigh, 
                      cosmo_params=params):
-                            
-    DS_miss = Delta_Sigma_NFW_miss(R,z,M200,s_off,tau,c200,P_Roff,params)
+    
+    
+    DS_miss = Delta_Sigma_NFW_miss(R,z,M200,s_off,tau,c200,P_Roff)
     DS_1h   = Delta_Sigma_NFW_2h(R,z,M200,c200,params,'1h')
     DS_2h   = Delta_Sigma_NFW_2h(R,z,M200,c200,params,'2h')
-    
+        
     return pcc*(DS_1h) + (1.-pcc)*DS_miss + DS_2h
 
 
@@ -696,7 +697,7 @@ def DELTA_SIGMA_full_parallel(r,z,M200,c200,
     
     slicer = int(round(len(r)/float(ncores), 0))
     slices = ((np.arange(ncores-1)+1)*slicer).astype(int)
-    slices = slices[(slices <= len(r))]
+    slices = slices[(slices < len(r))]
     r_splitted = np.split(r,slices)
     
     ncores = len(r_splitted)

@@ -208,7 +208,7 @@ def Sigma_NFW(R,z,M200,c200 = None,cosmo=cosmo):
     atan2 = np.arctan(((x2-1.0)/(1.0+x2))**0.5)
     j2 = (1./(x2**2-1.))*(1.-(2./np.sqrt(x2**2 - 1.))*atan2) 
     
-    jota[m4] = np.interp(x[m4].astype(float64),[x1,x2],[j1,j2])
+    jota[m4] = np.interp(x[m4],[x1,x2],[j1,j2])
                 
     rs_m = R200/c200
     kapak = (2.*rs_m*deltac*roc_mpc)
@@ -723,3 +723,7 @@ def DELTA_SIGMA_full_parallel(r,z,M200,c200,
         DS_full = np.append(DS_full,s)
             
     return DS_full
+
+# t1 = time.time()
+# ds   = DELTA_SIGMA_full_parallel(R,0.2,1.e14,3.5,s_off = 0.15, pcc = 0.7, P_Roff = Gamma, cosmo_params=params,ncores=20)
+# print(time.time()-t1)

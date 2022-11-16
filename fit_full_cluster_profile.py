@@ -82,7 +82,7 @@ def log_likelihood(data_model, R, DS, eDS):
     
     c200 = concentration.concentration(10**logM, '200c', zmean, model = cmodel)
     
-    ds   = DELTA_SIGMA_full_parallel(R,zmean,10**logM,c200,s_off = s_off, pcc = pacc, P_Roff = Gamma, cosmo_params=params,ncores=ncores)
+    ds   = DELTA_SIGMA_full_parallel(R,zmean,10**logM,c200,s_off = s_off, pcc = pcc, P_Roff = Gamma, cosmo_params=params,ncores=ncores)
     
     sigma2 = eDS**2
     return -0.5 * np.sum((DS - ds)**2 / sigma2 + np.log(2.*np.pi*sigma2))

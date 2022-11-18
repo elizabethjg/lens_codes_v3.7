@@ -483,7 +483,9 @@ def Delta_Sigma_Ein_2h(R,z,M200,c200,
     
     return ds/(1.e3**2)
 
-def S2_quadrupole(R,z,M200,c200 = None,terms='1h',cosmo_params=params,pname='NFW',alpha=0.3):
+def S2_quadrupole(R,z,M200,c200 = None,
+                  terms='1h',cosmo_params=params,
+                  pname='NFW',alpha=0.3,limint=500e3):
 
     '''
     Quadrupole term defined as -1.*(d(Sigma)/dr)*r
@@ -492,9 +494,9 @@ def S2_quadrupole(R,z,M200,c200 = None,terms='1h',cosmo_params=params,pname='NFW
     
     def monopole(R):
         if pname == 'NFW':
-            return Sigma_NFW_2h(R,z,M200,c200,terms=terms,cosmo_params=cosmo_params)
+            return Sigma_NFW_2h(R,z,M200,c200,terms=terms,cosmo_params=cosmo_params,limint=limint)
         elif pname == 'Einasto':
-            return Sigma_Ein_2h(R,z,M200,c200,alpha,terms=terms,cosmo_params=cosmo_params)
+            return Sigma_Ein_2h(R,z,M200,c200,alpha,terms=terms,cosmo_params=cosmo_params,limint=limint)
     
     m0p = derivative(monopole,R,dx=1e-4)
     q   =  m0p*R

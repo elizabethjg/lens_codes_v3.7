@@ -261,7 +261,9 @@ def quadrupole(R,z,M200,c200 = None,cosmo=cosmo):
 
     return q
 
-def rho_NFW_2h(R,z,M200,c200,cosmo_params=params,terms='1h'):
+def rho_NFW_2h(R,z,M200,c200,
+               cosmo_params=params,
+               terms='1h',limint=500e3):
     
     '''
     R - radii [Mpc]
@@ -290,17 +292,19 @@ def rho_NFW_2h(R,z,M200,c200,cosmo_params=params,terms='1h'):
         rho_in  = pNFW.density(R*1.e3)
         rho = rho_in
     elif terms == '2h':
-        rho_out = pNFW.densityOuter(R*1.e3, interpolate=False, accuracy=0.01, max_r_integrate=500e3)
+        rho_out = pNFW.densityOuter(R*1.e3, interpolate=False, accuracy=0.01, max_r_integrate=limint)
         rho = rho_out
     elif terms == '1h+2h':
         rho_in  = pNFW.density(R*1.e3)
-        rho_out = pNFW.densityOuter(R*1.e3, interpolate=False, accuracy=0.01, max_r_integrate=500e3)
+        rho_out = pNFW.densityOuter(R*1.e3, interpolate=False, accuracy=0.01, max_r_integrate=limint)
         rho = rho_in + rho_out
     
     return rho/(1.e3**3)
 
 
-def Sigma_NFW_2h(R,z,M200,c200,cosmo_params=params,terms='1h'):
+def Sigma_NFW_2h(R,z,M200,c200,
+                 cosmo_params=params,
+                 terms='1h',limint=500e3):
 
     '''
     projected NFW density from colossus
@@ -325,16 +329,18 @@ def Sigma_NFW_2h(R,z,M200,c200,cosmo_params=params,terms='1h'):
         s_in  = pNFW.surfaceDensityInner(R*1.e3)
         s = s_in
     elif terms == '2h':
-        s_out = pNFW.surfaceDensityOuter(R*1.e3, interpolate=False, accuracy=0.01, max_r_integrate=500e3)
+        s_out = pNFW.surfaceDensityOuter(R*1.e3, interpolate=False, accuracy=0.01, max_r_integrate=limint)
         s = s_out
     elif terms == '1h+2h':
         s_in  = pNFW.surfaceDensityInner(R*1.e3)
-        s_out = pNFW.surfaceDensityOuter(R*1.e3, interpolate=False, accuracy=0.01, max_r_integrate=500e3)
+        s_out = pNFW.surfaceDensityOuter(R*1.e3, interpolate=False, accuracy=0.01, max_r_integrate=limint)
         s = s_in + s_out
     
     return s/(1.e3**2)
 
-def Sigma_Ein_2h(R,z,M200,c200,alpha,cosmo_params=params,terms='1h'):
+def Sigma_Ein_2h(R,z,M200,c200,
+                 alpha,cosmo_params=params,
+                 terms='1h',limint=500e3):
     
     '''
     projected Ein density from colossus
@@ -360,16 +366,18 @@ def Sigma_Ein_2h(R,z,M200,c200,alpha,cosmo_params=params,terms='1h'):
         s_in  = p.surfaceDensityInner(R*1.e3)
         s = s_in
     elif terms == '2h':
-        s_out = p.surfaceDensityOuter(R*1.e3, interpolate=False, accuracy=0.01, max_r_integrate=500e3)
+        s_out = p.surfaceDensityOuter(R*1.e3, interpolate=False, accuracy=0.01, max_r_integrate=limint)
         s = s_out
     elif terms == '1h+2h':
         s_in  = p.surfaceDensityInner(R*1.e3)
-        s_out = p.surfaceDensityOuter(R*1.e3, interpolate=False, accuracy=0.01, max_r_integrate=500e3)
+        s_out = p.surfaceDensityOuter(R*1.e3, interpolate=False, accuracy=0.01, max_r_integrate=limint)
         s = s_in + s_out
     
     return s/(1.e3**2)
 
-def Delta_Sigma_NFW_2h(R,z,M200,c200,cosmo_params=params,terms='1h'):
+def Delta_Sigma_NFW_2h(R,z,M200,c200,
+                    cosmo_params=params,
+                    terms='1h',limint=100e3):
     
     '''
     NFW contrast density from colossus
@@ -394,11 +402,11 @@ def Delta_Sigma_NFW_2h(R,z,M200,c200,cosmo_params=params,terms='1h'):
         ds_in  = pNFW.deltaSigmaInner(R*1.e3)
         ds = ds_in
     elif terms == '2h':
-        ds_out = pNFW.deltaSigmaOuter(R*1.e3, interpolate=False, interpolate_surface_density=False, accuracy=0.01, max_r_integrate=100e3)
+        ds_out = pNFW.deltaSigmaOuter(R*1.e3, interpolate=False, interpolate_surface_density=False, accuracy=0.01, max_r_integrate=limint)
         ds = ds_out
     elif terms == '1h+2h':
         ds_in  = pNFW.deltaSigmaInner(R*1.e3)
-        ds_out = pNFW.deltaSigmaOuter(R*1.e3, interpolate=False, interpolate_surface_density=False, accuracy=0.01, max_r_integrate=100e3)
+        ds_out = pNFW.deltaSigmaOuter(R*1.e3, interpolate=False, interpolate_surface_density=False, accuracy=0.01, max_r_integrate=limint)
         ds = ds_in + ds_out
     
     return ds/(1.e3**2)
@@ -440,7 +448,9 @@ def Delta_Sigma_NFW_2h_parallel(r,z,M200,c200,terms='1h',
     return DS_2h
 
 
-def Delta_Sigma_Ein_2h(R,z,M200,c200,alpha,cosmo_params=params,terms='1h'):
+def Delta_Sigma_Ein_2h(R,z,M200,c200,
+                       alpha,cosmo_params=params,
+                       terms='1h',limint=100e3):
     
     '''
     Einasto contrast density from colossus
@@ -464,11 +474,11 @@ def Delta_Sigma_Ein_2h(R,z,M200,c200,alpha,cosmo_params=params,terms='1h'):
         ds_in  = p.deltaSigmaInner(R*1.e3)
         ds = ds_in
     elif terms == '2h':
-        ds_out = p.deltaSigmaOuter(R*1.e3, interpolate=False, interpolate_surface_density=False, accuracy=0.01, max_r_integrate=100e3)
+        ds_out = p.deltaSigmaOuter(R*1.e3, interpolate=False, interpolate_surface_density=False, accuracy=0.01, max_r_integrate=limint)
         ds = ds_out
     elif terms == '1h+2h':
         ds_in  = p.deltaSigmaInner(R*1.e3)
-        ds_out = p.deltaSigmaOuter(R*1.e3, interpolate=False, interpolate_surface_density=False, accuracy=0.01, max_r_integrate=100e3)
+        ds_out = p.deltaSigmaOuter(R*1.e3, interpolate=False, interpolate_surface_density=False, accuracy=0.01, max_r_integrate=limint)
         ds = ds_in + ds_out
     
     return ds/(1.e3**2)

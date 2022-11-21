@@ -524,7 +524,7 @@ def main(lcat, sample='pru',
                 rs      = L.offset
                 # T       = (1. - L.q**2)/(1. - L.s**2)
                 
-                mmass   = (L.lgM >= lM_min)*(L.lgM < lM_max)
+                mmass   = (L.lgm >= lM_min)*(L.lgm < lM_max)
                 mz      = (L.z >= z_min)*(L.z < z_max)
                 # mq      = (L.q2d >= q_min)*(L.q2d < q_max)
                 # mT      = (T >= T_min)*(T < T_max)
@@ -777,16 +777,16 @@ def main(lcat, sample='pru',
         # AVERAGE LENS PARAMETERS AND SAVE IT IN HEADER
         
         zmean        = np.average(L.z,weights=Ntot)
-        lM_mean      = np.log10(np.average(10**L.lgMEin_rho,weights=Ntot))
+        lM_mean      = np.log10(np.average(10**L.lgm,weights=Ntot))
         # c200_mean    = np.average(L.cNFW_S,weights=Ntot)
         # lM200_mean   = np.log10(np.average(10**L.lgMNFW_S,weights=Ntot))
         
-        q2d_mean     = np.average(L.q2d,weights=Ntot)
-        q2dr_mean    = np.average(L.q2dr,weights=Ntot)
-        q3d_mean     = np.average(L.q,weights=Ntot)
-        q3dr_mean    = np.average(L.qr,weights=Ntot)
-        s3d_mean     = np.average(L.s,weights=Ntot)
-        s3dr_mean    = np.average(L.sr,weights=Ntot)
+        # q2d_mean     = np.average(L.q2d,weights=Ntot)
+        # q2dr_mean    = np.average(L.q2dr,weights=Ntot)
+        # q3d_mean     = np.average(L.q,weights=Ntot)
+        # q3dr_mean    = np.average(L.qr,weights=Ntot)
+        # s3d_mean     = np.average(L.s,weights=Ntot)
+        # s3dr_mean    = np.average(L.sr,weights=Ntot)
 
         h = fits.Header()
         h.append(('N_LENSES',np.int(Nlenses)))
@@ -808,12 +808,12 @@ def main(lcat, sample='pru',
         # h.append(('lM200_mean',np.round(lM200_mean,4)))
         # h.append(('c200_mean',np.round(c200_mean,4)))
         h.append(('z_mean',np.round(zmean,4)))
-        h.append(('q2d_mean',np.round(q2d_mean,4)))
-        h.append(('q2dr_mean',np.round(q2dr_mean,4)))
-        h.append(('q3d_mean',np.round(q3d_mean,4)))
-        h.append(('q3dr_mean',np.round(q3dr_mean,4)))
-        h.append(('s3d_mean',np.round(s3d_mean,4)))        
-        h.append(('s3dr_mean',np.round(s3dr_mean,4))) 
+        # h.append(('q2d_mean',np.round(q2d_mean,4)))
+        # h.append(('q2dr_mean',np.round(q2dr_mean,4)))
+        # h.append(('q3d_mean',np.round(q3d_mean,4)))
+        # h.append(('q3dr_mean',np.round(q3dr_mean,4)))
+        # h.append(('s3d_mean',np.round(s3d_mean,4)))        
+        # h.append(('s3dr_mean',np.round(s3dr_mean,4))) 
         if miscen:
             h.append(('soff',np.round(soff,4)))
         if domap:

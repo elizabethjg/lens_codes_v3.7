@@ -222,7 +222,7 @@ def partial_map(RA0,DEC0,Z,angles,
         k  = catdata.kappa*sigma_c
                 
         wcs.wcs.crval = [RA0,DEC0]
-        dx, dy = wcs.wcs_world2pix(catdata.ra,catdata.dec, 0)
+        dx, dy = wcs.wcs_world2pix(catdata.ra_gal,catdata.dec_gal, 0)
 
         dx = dx*KPCSCALE*1.e-3
         dy = dy*KPCSCALE*1.e-3

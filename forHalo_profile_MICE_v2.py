@@ -568,6 +568,11 @@ def main(lcat, sample='pru',
         labels = km.find_nearest(X)
         kmask = np.zeros((ncen+1,len(X)))
         kmask[0] = np.ones(len(X)).astype(bool)
+        
+        for j in np.arange(1,ncen+1):
+            kmask[j] = ~(labels == j-1)
+
+        
         '''
         for j in np.arange(1,ncen+1):
             kmask[j] = ~(labels == j-1)

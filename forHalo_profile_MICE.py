@@ -551,7 +551,8 @@ def main(lcat, sample='pru',
                 
         #Computing SMA axis        
         
-        theta  = np.array([np.zeros(sum(mlenses)),np.arctan(L.a2Dy/L.a2Dx),np.arctan(L.a2Dry/L.a2Drx)]).T                
+        # theta  = np.array([np.zeros(sum(mlenses)),np.arctan(L.a2Dy/L.a2Dx),np.arctan(L.a2Dry/L.a2Drx)]).T                
+        theta  = np.array([np.zeros(sum(mlenses)),np.zeros(sum(mlenses)),np.zeros(sum(mlenses))]).T                
         
         # Introduce misalignment
         if misalign:

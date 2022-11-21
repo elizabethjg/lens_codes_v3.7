@@ -714,7 +714,7 @@ def main(lcat, sample='pru',
                 
                 if num == 1:
                         entrada = [Lsplit[l].ra_rc[0], Lsplit[l].dec_rc[0],
-                                   Lsplit[l].z[0],Tsplit[l][0],
+                                   Lsplit[l].redshift[0],Tsplit[l][0],
                                    RIN,ROUT,ndots,hcosmo,
                                    addnoise,Rsplit[l][0],PHIsplit[l][0]]
                         

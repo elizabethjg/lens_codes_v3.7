@@ -508,7 +508,10 @@ def main(lcat, sample='pru',
         ra = L.ra_rc
         dec = L.dec_rc
         
-        Eratio = (2.*L.K/abs(L.U))
+        try:
+            Eratio = (2.*L.K/abs(L.U))
+        except:
+            Eratio = (2.*L.ekin/abs(L.epot))
                                
         if idlist:
                 ides = np.loadtxt(idlist).astype(int)
@@ -554,7 +557,9 @@ def main(lcat, sample='pru',
             sample = sample+'_mis'+str(misalign)
         
         # Define K masks   
-        kmask = np.zeros((101,len(ra)))
+        ncen = 100
+        
+        kmask = np.zeros((ncen+1,len(ra)))
         kmask[0] = np.ones(len(ra)).astype(bool)
         
         ramin  = np.min(ra)
@@ -576,13 +581,6 @@ def main(lcat, sample='pru',
         ind_rand0 = np.arange(Nlenses)
         np.random.shuffle(ind_rand0)
         
-        # lbins = int(round(Nlenses/100, 0))
-        # slices = ((np.arange(100)+1)*lbins).astype(int)
-        # ind_rand = np.split(ind_rand0,slices[:-1])
-
-        # for j in range(len(ind_rand)):
-            # m = ~np.in1d(np.arange(Nlenses),ind_rand[j])
-            # kmask[j+1][m] = 1
         
         # Introduce miscentring
         roff = np.zeros(Nlenses)
@@ -631,11 +629,11 @@ def main(lcat, sample='pru',
             xbin = xbin.flatten()
 
             # WHERE THE SUMS ARE GOING TO BE SAVED
-            GTsum = np.zeros((101,ndots,3))
-            GXsum = np.zeros((101,ndots,3))
-            Ksum  = np.zeros((101,ndots,3))        
+            GTsum = np.zeros((ncen+1,ndots,3))
+            GXsum = np.zeros((ncen+1,ndots,3))
+            Ksum  = np.zeros((ncen+1,ndots,3))        
             
-            Ninbin = np.zeros((101,ndots,3))
+            Ninbin = np.zeros((ncen+1,ndots,3))
             
             # FUNCTION TO RUN IN PARALLEL
             partial = partial_map_unpack
@@ -654,24 +652,24 @@ def main(lcat, sample='pru',
 
             # WHERE THE SUMS ARE GOING TO BE SAVED
             
-            Ninbin = np.zeros((101,ndots))
+            Ninbin = np.zeros((ncen+1,ndots))
             
-            SIGMAwsum    = np.zeros((101,ndots)) 
-            DSIGMAwsum_T = np.zeros((101,ndots)) 
-            DSIGMAwsum_X = np.zeros((101,ndots))
+            SIGMAwsum    = np.zeros((ncen+1,ndots)) 
+            DSIGMAwsum_T = np.zeros((ncen+1,ndots)) 
+            DSIGMAwsum_X = np.zeros((ncen+1,ndots))
                 
-            SIGMAcos_wsum = np.zeros((101,ndots,3))
-            SIGMApar_wsum = np.zeros((101,ndots,3))
-            SIGMAper_wsum = np.zeros((101,ndots,3))
+            SIGMAcos_wsum = np.zeros((ncen+1,ndots,3))
+            SIGMApar_wsum = np.zeros((ncen+1,ndots,3))
+            SIGMAper_wsum = np.zeros((ncen+1,ndots,3))
             
-            GAMMATcos_wsum = np.zeros((101,ndots,3))
-            GAMMAXsin_wsum = np.zeros((101,ndots,3))
+            GAMMATcos_wsum = np.zeros((ncen+1,ndots,3))
+            GAMMAXsin_wsum = np.zeros((ncen+1,ndots,3))
     
-            COS2_2theta_wsum = np.zeros((101,ndots,3))
-            SIN2_2theta_wsum = np.zeros((101,ndots,3))
+            COS2_2theta_wsum = np.zeros((ncen+1,ndots,3))
+            SIN2_2theta_wsum = np.zeros((ncen+1,ndots,3))
             
-            Ninbin_par = np.zeros((101,ndots,3))
-            Ninbin_per = np.zeros((101,ndots,3))
+            Ninbin_par = np.zeros((ncen+1,ndots,3))
+            Ninbin_per = np.zeros((ncen+1,ndots,3))
             
             # FUNCTION TO RUN IN PARALLEL
             partial = partial_profile_unpack
@@ -723,34 +721,34 @@ def main(lcat, sample='pru',
                         if domap:
                             
                             km      = np.tile(Ksplit[l][j],(3,ndots,1)).T
-                            Ninbin += np.tile(profilesums['N_inbin'],(101,1,1))*km
+                            Ninbin += np.tile(profilesums['N_inbin'],(ncen+1,1,1))*km
 
-                            GTsum += np.tile(profilesums['GTsum'],(101,1,1))*km
-                            GXsum += np.tile(profilesums['GXsum'],(101,1,1))*km
-                            Ksum  += np.tile(profilesums['Ksum'],(101,1,1))*km
+                            GTsum += np.tile(profilesums['GTsum'],(ncen+1,1,1))*km
+                            GXsum += np.tile(profilesums['GXsum'],(ncen+1,1,1))*km
+                            Ksum  += np.tile(profilesums['Ksum'],(ncen+1,1,1))*km
                             
                         else:
 
                             km      = np.tile(Ksplit[l][j],(3,ndots,1)).T
 
-                            Ninbin += np.tile(profilesums['N_inbin'],(101,1))*km[:,:,0]
+                            Ninbin += np.tile(profilesums['N_inbin'],(ncen+1,1))*km[:,:,0]
                                                 
-                            SIGMAwsum    += np.tile(profilesums['SIGMAwsum'],(101,1))*km[:,:,0]
-                            DSIGMAwsum_T += np.tile(profilesums['DSIGMAwsum_T'],(101,1))*km[:,:,0]
-                            DSIGMAwsum_X += np.tile(profilesums['DSIGMAwsum_X'],(101,1))*km[:,:,0]
+                            SIGMAwsum    += np.tile(profilesums['SIGMAwsum'],(ncen+1,1))*km[:,:,0]
+                            DSIGMAwsum_T += np.tile(profilesums['DSIGMAwsum_T'],(ncen+1,1))*km[:,:,0]
+                            DSIGMAwsum_X += np.tile(profilesums['DSIGMAwsum_X'],(ncen+1,1))*km[:,:,0]
                             
-                            SIGMAcos_wsum  += np.tile(profilesums['SIGMAcos_wsum'],(101,1,1))*km
-                            SIGMApar_wsum  += np.tile(profilesums['SIGMApar_wsum'],(101,1,1))*km
-                            SIGMAper_wsum  += np.tile(profilesums['SIGMAper_wsum'],(101,1,1))*km
+                            SIGMAcos_wsum  += np.tile(profilesums['SIGMAcos_wsum'],(ncen+1,1,1))*km
+                            SIGMApar_wsum  += np.tile(profilesums['SIGMApar_wsum'],(ncen+1,1,1))*km
+                            SIGMAper_wsum  += np.tile(profilesums['SIGMAper_wsum'],(ncen+1,1,1))*km
 
-                            GAMMATcos_wsum += np.tile(profilesums['GAMMATcos_wsum'],(101,1,1))*km
-                            GAMMAXsin_wsum += np.tile(profilesums['GAMMAXsin_wsum'],(101,1,1))*km
+                            GAMMATcos_wsum += np.tile(profilesums['GAMMATcos_wsum'],(ncen+1,1,1))*km
+                            GAMMAXsin_wsum += np.tile(profilesums['GAMMAXsin_wsum'],(ncen+1,1,1))*km
     
-                            COS2_2theta_wsum += np.tile(profilesums['COS2_2theta_wsum'],(101,1,1))*km
-                            SIN2_2theta_wsum += np.tile(profilesums['SIN2_2theta_wsum'],(101,1,1))*km
+                            COS2_2theta_wsum += np.tile(profilesums['COS2_2theta_wsum'],(ncen+1,1,1))*km
+                            SIN2_2theta_wsum += np.tile(profilesums['SIN2_2theta_wsum'],(ncen+1,1,1))*km
 
-                            Ninbin_par += np.tile(profilesums['N_inbin_par'],(101,1,1))*km
-                            Ninbin_per += np.tile(profilesums['N_inbin_per'],(101,1,1))*km
+                            Ninbin_par += np.tile(profilesums['N_inbin_par'],(ncen+1,1,1))*km
+                            Ninbin_per += np.tile(profilesums['N_inbin_per'],(ncen+1,1,1))*km
                         
                 
                 t2 = time.time()

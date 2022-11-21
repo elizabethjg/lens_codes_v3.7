@@ -17,6 +17,9 @@ from scipy import stats
 import astropy.units as u
 from astropy.coordinates import SkyCoord
 from models_profiles import Gamma
+import kmeans_radec
+from kmeans_radec import KMeans, kmeans_sample
+
 # For map
 wcs = WCS(naxis=2)
 wcs.wcs.crpix = [0., 0.]
@@ -32,7 +35,7 @@ Msun = M_sun.value # Solar mass (kg)
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-sample', action='store', dest='sample',default='pru')
-parser.add_argument('-lens_cat', action='store', dest='lcat',default='HALO_Props_MICE.fits')
+parser.add_argument('-lens_cat', action='store', dest='lcat',default='/mnt/simulations/MICE/HALO_Props_MICE.fits')
 parser.add_argument('-lM_min', action='store', dest='lM_min', default=14.)
 parser.add_argument('-lM_max', action='store', dest='lM_max', default=15.5)
 parser.add_argument('-z_min', action='store', dest='z_min', default=0.1)
@@ -493,7 +496,7 @@ def main(lcat, sample='pru',
         
         #reading cats
                 
-        L = fits.open(folder+lcat)[1].data               
+        L = fits.open(lcat)[1].data               
 
         '''
         # To try old centre
@@ -557,7 +560,18 @@ def main(lcat, sample='pru',
             sample = sample+'_mis'+str(misalign)
         
         # Define K masks   
-        ncen = 100
+        ncen = 50
+        X    = np.array([L.ra_rc,L.dec_rc]).T
+        
+        km = kmeans_sample(X, ncen, maxiter=100, tol=1.0e-5)
+        labels = km.find_nearest(X)
+        kmask = np.zeros((ncen+1,len(X)))
+        kmask[0] = np.ones(len(X)).astype(bool)
+        '''
+        for j in np.arange(1,ncen+1):
+            kmask[j] = ~(labels == j-1)
+
+
         
         kmask = np.zeros((ncen+1,len(ra)))
         kmask[0] = np.ones(len(ra)).astype(bool)
@@ -577,12 +591,13 @@ def main(lcat, sample='pru',
                         # plt.plot(ra[(mra*mdec)],dec[(mra*mdec)],'C'+str(c+1)+',')
                         kmask[c] = ~(mra*mdec)
                         c += 1
+        '''
+                
+        # Introduce miscentring
         
         ind_rand0 = np.arange(Nlenses)
         np.random.shuffle(ind_rand0)
         
-        
-        # Introduce miscentring
         roff = np.zeros(Nlenses)
         phi_off = np.zeros(Nlenses)
         

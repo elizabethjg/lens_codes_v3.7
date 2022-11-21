@@ -414,7 +414,7 @@ def Delta_Sigma_NFW_2h(R,z,M200,c200,
 def Delta_Sigma_NFW_2h_unpack(minput):
 	return Delta_Sigma_NFW_2h(*minput)
 
-def Delta_Sigma_NFW_2h_parallel(R,z,M200,c200,
+def Delta_Sigma_NFW_2h_parallel(r,z,M200,c200,
                     cosmo_params=params,
                     terms='1h',limint=100e3,ncores=10):
     
@@ -488,7 +488,7 @@ def Delta_Sigma_Ein_2h(R,z,M200,c200,
 def Delta_Sigma_Ein_2h_unpack(minput):
 	return Delta_Sigma_Ein_2h(*minput)
 
-def Delta_Sigma_Ein_2h_parallel(R,z,M200,c200,
+def Delta_Sigma_Ein_2h_parallel(r,z,M200,c200,
                        alpha,cosmo_params=params,
                        terms='1h',limint=100e3,ncores=10):
     

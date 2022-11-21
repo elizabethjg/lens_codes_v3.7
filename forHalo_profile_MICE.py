@@ -721,7 +721,7 @@ def main(lcat, sample='pru',
                         salida = [partial(entrada)]
                 else:          
                         entrada = np.array([Lsplit[l].ra_rc,Lsplit[l].dec_rc,
-                                        Lsplit[l].z,Tsplit[l].tolist(),
+                                        Lsplit[l].redshift,Tsplit[l].tolist(),
                                         rin,rout,nd,h_array,
                                         addnoise_array,Rsplit[l],PHIsplit[l]]).T
                         

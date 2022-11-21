@@ -414,8 +414,9 @@ def Delta_Sigma_NFW_2h(R,z,M200,c200,
 def Delta_Sigma_NFW_2h_unpack(minput):
 	return Delta_Sigma_NFW_2h(*minput)
 
-def Delta_Sigma_NFW_2h_parallel(r,z,M200,c200,terms='1h',
-                                cosmo_params=params,ncores=4):	
+def Delta_Sigma_NFW_2h_parallel(R,z,M200,c200,
+                    cosmo_params=params,
+                    terms='1h',limint=100e3,ncores=10):
     
     if ncores > len(r):
         ncores = len(r)
@@ -433,8 +434,9 @@ def Delta_Sigma_NFW_2h_parallel(r,z,M200,c200,terms='1h',
     c200   = [c200]*ncores
     cosmo  = [cosmo_params]*ncores
     terms  = [terms]*ncores
+    limint = [limint]*ncores
         
-    entrada = np.array([r_splitted,z,M200,c200,cosmo,terms]).T
+    entrada = np.array([r_splitted,z,M200,c200,cosmo,terms,limint]).T
     
     pool = Pool(processes=(ncores))
     salida=np.array(pool.map(Delta_Sigma_NFW_2h_unpack, entrada))
@@ -482,6 +484,46 @@ def Delta_Sigma_Ein_2h(R,z,M200,c200,
         ds = ds_in + ds_out
     
     return ds/(1.e3**2)
+
+def Delta_Sigma_Ein_2h_unpack(minput):
+	return Delta_Sigma_Ein_2h(*minput)
+
+def Delta_Sigma_Ein_2h_parallel(R,z,M200,c200,
+                       alpha,cosmo_params=params,
+                       terms='1h',limint=100e3,ncores=10):
+    
+    if ncores > len(r):
+        ncores = len(r)
+    
+    
+    slicer = int(round(len(r)/float(ncores), 0))
+    slices = ((np.arange(ncores-1)+1)*slicer).astype(int)
+    slices = slices[(slices < len(r))]
+    r_splitted = np.split(r,slices)
+    
+    ncores = len(r_splitted)
+    
+    z      = [z]*ncores
+    M200   = [M200]*ncores
+    c200   = [c200]*ncores
+    alpha  = [alpha]*ncores
+    cosmo  = [cosmo_params]*ncores
+    terms  = [terms]*ncores
+    limint = [limint]*ncores
+        
+    entrada = np.array([r_splitted,z,M200,c200,alpha,cosmo,terms,limint]).T
+    
+    pool = Pool(processes=(ncores))
+    salida=np.array(pool.map(Delta_Sigma_Ein_2h_unpack, entrada))
+    pool.terminate()
+
+    DS_2h = np.array([])
+    
+    for s in salida:
+        DS_2h = np.append(DS_2h,s)
+            
+    return DS_2h
+
 
 def S2_quadrupole(R,z,M200,c200 = None,
                   terms='1h',cosmo_params=params,

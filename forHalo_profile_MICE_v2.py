@@ -777,7 +777,7 @@ def main(lcat, sample='pru',
 
         # AVERAGE LENS PARAMETERS AND SAVE IT IN HEADER
         
-        zmean        = np.average(L.z,weights=Ntot)
+        zmean        = np.average(L.redshift,weights=Ntot)
         lM_mean      = np.log10(np.average(10**L.lgm,weights=Ntot))
         # c200_mean    = np.average(L.cNFW_S,weights=Ntot)
         # lM200_mean   = np.log10(np.average(10**L.lgMNFW_S,weights=Ntot))

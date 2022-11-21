@@ -109,7 +109,7 @@ maskr   = (p.Rp > (RIN/1000.))*(p.Rp < (ROUT/1000.))
 
 mr = np.meshgrid(maskr,maskr)[1]*np.meshgrid(maskr,maskr)[0]
 
-CovDS  = cov['COV_ST'].reshape(len(p.Rp),len(p.Rp))[mr]
+CovDS  = cov['COV_DST'].reshape(len(p.Rp),len(p.Rp))[mr]
 CovGT  = cov['COV_GT'+ang].reshape(len(p.Rp),len(p.Rp))[mr]
 CovGX  = cov['COV_GX'+ang].reshape(len(p.Rp),len(p.Rp))[mr]
 

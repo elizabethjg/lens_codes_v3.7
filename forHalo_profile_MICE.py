@@ -522,16 +522,16 @@ def main(lcat, sample='pru',
         else:
                 
                 rs      = L.offset
-                T       = (1. - L.q**2)/(1. - L.s**2)
+                # T       = (1. - L.q**2)/(1. - L.s**2)
                 
                 mmass   = (L.lgMEin_rho >= lM_min)*(L.lgMEin_rho < lM_max)
                 mz      = (L.z >= z_min)*(L.z < z_max)
-                mq      = (L.q2d >= q_min)*(L.q2d < q_max)
-                mT      = (T >= T_min)*(T < T_max)
-                mrs     = (rs >= rs_min)*(rs < rs_max)
-                mres    = L.resNFW_S < resNFW_max
+                # mq      = (L.q2d >= q_min)*(L.q2d < q_max)
+                # mT      = (T >= T_min)*(T < T_max)
+                # mrs     = (rs >= rs_min)*(rs < rs_max)
+                # mres    = L.resNFW_S < resNFW_max
                 # mr5s    = (L.R5scale >= R5s_min)*(L.R5scale < R5s_max)
-                mlenses = mmass*mz*mq*mT*mrs*mres
+                mlenses = mmass*mz#*mq*mT*mrs*mres
         
         # SELECT RELAXED HALOS
         if relax:

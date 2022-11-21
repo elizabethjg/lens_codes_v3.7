@@ -525,7 +525,7 @@ def main(lcat, sample='pru',
                 # T       = (1. - L.q**2)/(1. - L.s**2)
                 
                 mmass   = (L.lgm >= lM_min)*(L.lgm < lM_max)
-                mz      = (L.z >= z_min)*(L.z < z_max)
+                mz      = (L.redshift >= z_min)*(L.redshift < z_max)
                 # mq      = (L.q2d >= q_min)*(L.q2d < q_max)
                 # mT      = (T >= T_min)*(T < T_max)
                 # mrs     = (rs >= rs_min)*(rs < rs_max)

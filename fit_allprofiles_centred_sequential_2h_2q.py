@@ -136,7 +136,7 @@ else:
         
         lM200, c200 = data_model
         
-        DS   = Delta_Sigma_NFW_2h(R,zmean,M200 = 10**lM200,c200=c200,cosmo_params=params,terms='1h+2h')
+        DS   = Delta_Sigma_NFW_2h_parallel(R,zmean,M200 = 10**lM200,c200=c200,cosmo_params=params,terms='1h+2h',ncores=ncores)
     
         L_DS = -np.dot((ds-DS),np.dot(iCds,(ds-DS)))/2.0
             
@@ -166,12 +166,12 @@ else:
     
     
     
-    pool = Pool(processes=(ncores))    
+    # pool = Pool(processes=(ncores))    
     sampler_DS = emcee.EnsembleSampler(nwalkers, ndim, log_probability_DS, 
-                                    args=(p.Rp,DSt,iCds),pool = pool)
+                                    args=(p.Rp,DSt,iCds))
     
     sampler_DS.run_mcmc(pos, nit, progress=True)
-    pool.terminate()
+    
     
     
     mcmc_out_DS = sampler_DS.get_chain(flat=True).T

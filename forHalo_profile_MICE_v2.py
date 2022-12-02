@@ -17,6 +17,9 @@ from scipy import stats
 import astropy.units as u
 from astropy.coordinates import SkyCoord
 from models_profiles import Gamma
+import kmeans_radec
+from kmeans_radec import KMeans, kmeans_sample
+
 # For map
 wcs = WCS(naxis=2)
 wcs.wcs.crpix = [0., 0.]
@@ -32,7 +35,7 @@ Msun = M_sun.value # Solar mass (kg)
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-sample', action='store', dest='sample',default='pru')
-parser.add_argument('-lens_cat', action='store', dest='lcat',default='HALO_Props_MICE.fits')
+parser.add_argument('-lens_cat', action='store', dest='lcat',default='/mnt/simulations/MICE/HALO_Props_MICE.fits')
 parser.add_argument('-lM_min', action='store', dest='lM_min', default=14.)
 parser.add_argument('-lM_max', action='store', dest='lM_max', default=15.5)
 parser.add_argument('-z_min', action='store', dest='z_min', default=0.1)
@@ -219,7 +222,7 @@ def partial_map(RA0,DEC0,Z,angles,
         k  = catdata.kappa*sigma_c
                 
         wcs.wcs.crval = [RA0,DEC0]
-        dx, dy = wcs.wcs_world2pix(catdata.ra,catdata.dec, 0)
+        dx, dy = wcs.wcs_world2pix(catdata.ra_gal,catdata.dec_gal, 0)
 
         dx = dx*KPCSCALE*1.e-3
         dy = dy*KPCSCALE*1.e-3
@@ -493,7 +496,7 @@ def main(lcat, sample='pru',
         
         #reading cats
                 
-        L = fits.open(folder+lcat)[1].data               
+        L = fits.open(lcat)[1].data               
 
         '''
         # To try old centre
@@ -519,16 +522,16 @@ def main(lcat, sample='pru',
         else:
                 
                 rs      = L.offset
-                T       = (1. - L.q**2)/(1. - L.s**2)
+                # T       = (1. - L.q**2)/(1. - L.s**2)
                 
-                mmass   = (L.lgMEin_rho >= lM_min)*(L.lgMEin_rho < lM_max)
-                mz      = (L.z >= z_min)*(L.z < z_max)
-                mq      = (L.q2d >= q_min)*(L.q2d < q_max)
-                mT      = (T >= T_min)*(T < T_max)
-                mrs     = (rs >= rs_min)*(rs < rs_max)
-                mres    = L.resNFW_S < resNFW_max
+                mmass   = (L.lgm >= lM_min)*(L.lgm < lM_max)
+                mz      = (L.redshift >= z_min)*(L.redshift < z_max)
+                # mq      = (L.q2d >= q_min)*(L.q2d < q_max)
+                # mT      = (T >= T_min)*(T < T_max)
+                # mrs     = (rs >= rs_min)*(rs < rs_max)
+                # mres    = L.resNFW_S < resNFW_max
                 # mr5s    = (L.R5scale >= R5s_min)*(L.R5scale < R5s_max)
-                mlenses = mmass*mz*mq*mT*mrs*mres
+                mlenses = mmass*mz#*mq*mT*mrs*mres
         
         # SELECT RELAXED HALOS
         if relax:
@@ -548,7 +551,8 @@ def main(lcat, sample='pru',
                 
         #Computing SMA axis        
         
-        theta  = np.array([np.zeros(sum(mlenses)),np.arctan(L.a2Dy/L.a2Dx),np.arctan(L.a2Dry/L.a2Drx)]).T                
+        # theta  = np.array([np.zeros(sum(mlenses)),np.arctan(L.a2Dy/L.a2Dx),np.arctan(L.a2Dry/L.a2Drx)]).T                
+        theta  = np.array([np.zeros(sum(mlenses)),np.zeros(sum(mlenses)),np.zeros(sum(mlenses))]).T                
         
         # Introduce misalignment
         if misalign:
@@ -557,7 +561,23 @@ def main(lcat, sample='pru',
             sample = sample+'_mis'+str(misalign)
         
         # Define K masks   
-        ncen = 100
+        ncen = 50
+        X    = np.array([L.ra_rc,L.dec_rc]).T
+        
+        km = kmeans_sample(X, ncen, maxiter=100, tol=1.0e-5)
+        labels = km.find_nearest(X)
+        kmask = np.zeros((ncen+1,len(X)))
+        kmask[0] = np.ones(len(X)).astype(bool)
+        
+        for j in np.arange(1,ncen+1):
+            kmask[j] = ~(labels == j-1)
+
+        
+        '''
+        for j in np.arange(1,ncen+1):
+            kmask[j] = ~(labels == j-1)
+
+
         
         kmask = np.zeros((ncen+1,len(ra)))
         kmask[0] = np.ones(len(ra)).astype(bool)
@@ -577,12 +597,13 @@ def main(lcat, sample='pru',
                         # plt.plot(ra[(mra*mdec)],dec[(mra*mdec)],'C'+str(c+1)+',')
                         kmask[c] = ~(mra*mdec)
                         c += 1
+        '''
+                
+        # Introduce miscentring
         
         ind_rand0 = np.arange(Nlenses)
         np.random.shuffle(ind_rand0)
         
-        
-        # Introduce miscentring
         roff = np.zeros(Nlenses)
         phi_off = np.zeros(Nlenses)
         
@@ -698,14 +719,14 @@ def main(lcat, sample='pru',
                 
                 if num == 1:
                         entrada = [Lsplit[l].ra_rc[0], Lsplit[l].dec_rc[0],
-                                   Lsplit[l].z[0],Tsplit[l][0],
+                                   Lsplit[l].redshift[0],Tsplit[l][0],
                                    RIN,ROUT,ndots,hcosmo,
                                    addnoise,Rsplit[l][0],PHIsplit[l][0]]
                         
                         salida = [partial(entrada)]
                 else:          
                         entrada = np.array([Lsplit[l].ra_rc,Lsplit[l].dec_rc,
-                                        Lsplit[l].z,Tsplit[l].tolist(),
+                                        Lsplit[l].redshift,Tsplit[l].tolist(),
                                         rin,rout,nd,h_array,
                                         addnoise_array,Rsplit[l],PHIsplit[l]]).T
                         
@@ -761,17 +782,17 @@ def main(lcat, sample='pru',
 
         # AVERAGE LENS PARAMETERS AND SAVE IT IN HEADER
         
-        zmean        = np.average(L.z,weights=Ntot)
-        lM_mean      = np.log10(np.average(10**L.lgMEin_rho,weights=Ntot))
+        zmean        = np.average(L.redshift,weights=Ntot)
+        lM_mean      = np.log10(np.average(10**L.lgm,weights=Ntot))
         # c200_mean    = np.average(L.cNFW_S,weights=Ntot)
         # lM200_mean   = np.log10(np.average(10**L.lgMNFW_S,weights=Ntot))
         
-        q2d_mean     = np.average(L.q2d,weights=Ntot)
-        q2dr_mean    = np.average(L.q2dr,weights=Ntot)
-        q3d_mean     = np.average(L.q,weights=Ntot)
-        q3dr_mean    = np.average(L.qr,weights=Ntot)
-        s3d_mean     = np.average(L.s,weights=Ntot)
-        s3dr_mean    = np.average(L.sr,weights=Ntot)
+        # q2d_mean     = np.average(L.q2d,weights=Ntot)
+        # q2dr_mean    = np.average(L.q2dr,weights=Ntot)
+        # q3d_mean     = np.average(L.q,weights=Ntot)
+        # q3dr_mean    = np.average(L.qr,weights=Ntot)
+        # s3d_mean     = np.average(L.s,weights=Ntot)
+        # s3dr_mean    = np.average(L.sr,weights=Ntot)
 
         h = fits.Header()
         h.append(('N_LENSES',np.int(Nlenses)))
@@ -793,12 +814,12 @@ def main(lcat, sample='pru',
         # h.append(('lM200_mean',np.round(lM200_mean,4)))
         # h.append(('c200_mean',np.round(c200_mean,4)))
         h.append(('z_mean',np.round(zmean,4)))
-        h.append(('q2d_mean',np.round(q2d_mean,4)))
-        h.append(('q2dr_mean',np.round(q2dr_mean,4)))
-        h.append(('q3d_mean',np.round(q3d_mean,4)))
-        h.append(('q3dr_mean',np.round(q3dr_mean,4)))
-        h.append(('s3d_mean',np.round(s3d_mean,4)))        
-        h.append(('s3dr_mean',np.round(s3dr_mean,4))) 
+        # h.append(('q2d_mean',np.round(q2d_mean,4)))
+        # h.append(('q2dr_mean',np.round(q2dr_mean,4)))
+        # h.append(('q3d_mean',np.round(q3d_mean,4)))
+        # h.append(('q3dr_mean',np.round(q3dr_mean,4)))
+        # h.append(('s3d_mean',np.round(s3d_mean,4)))        
+        # h.append(('s3dr_mean',np.round(s3dr_mean,4))) 
         if miscen:
             h.append(('soff',np.round(soff,4)))
         if domap:

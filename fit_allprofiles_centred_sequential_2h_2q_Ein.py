@@ -1,5 +1,4 @@
 import sys
-sys.path.append('/mnt/projects/lensing/lens_codes_v3.7')
 sys.path.append('/home/eli/lens_codes_v3.7')
 sys.path.append('/home/elizabeth/lens_codes_v3.7')
 import time
@@ -74,16 +73,15 @@ elif angle == 'reduced':
     ang = '_reduced'
 
 if components == 'all':
-    outfile     = 'fitresults_2h_2q_'+str(int(RIN))+'_'+str(int(ROUT))+'_'+file_name
+    outfile     = 'fitresults_2h_2q_Ein_'+str(int(RIN))+'_'+str(int(ROUT))+'_'+file_name
 else:
-    outfile     = 'fitresults_2h_2q_'+components+'_'+str(int(RIN))+'_'+str(int(ROUT))+'_'+file_name
+    outfile     = 'fitresults_2h_2q_Ein_'+components+'_'+str(int(RIN))+'_'+str(int(ROUT))+'_'+file_name
 backup      = folder+'backup_'+outfile
 
 if components == 'all':
-    outfile2     = 'fitresults_2h_2q_'+str(int(RIN))+'_'+str(int(ROUT))+ang+'_'+file_name[:-5]+qext+'.fits'
+    outfile2     = 'fitresults_2h_2q_Ein_'+str(int(RIN))+'_'+str(int(ROUT))+ang+'_'+file_name[:-5]+qext+'.fits'
 else:
-    outfile2     = 'fitresults_2h_2q_'+components+'_'+str(int(RIN))+'_'+str(int(ROUT))+ang+'_'+file_name[:-5]+qext+'.fits'
-
+    outfile2     = 'fitresults_2h_2q_Ein_'+components+'_'+str(int(RIN))+'_'+str(int(ROUT))+ang+'_'+file_name[:-5]+qext+'.fits'
 
 infile = file_name[:-5]+qext+'.fits'
 
@@ -122,9 +120,10 @@ t1 = time.time()
 if qext != '' or angle == 'reduced':
     print('Reading results from ',outfile)
     f = fits.open(folder+outfile)[1].data
-    mcmc_out_DS = [f.lM200,f.c200]
+    mcmc_out_DS = [f.lM200,f.c200,f.alpha]
     lM = np.percentile(f.lM200[1500:], [16, 50, 84])
     c200 = np.percentile(f.c200[1500:], [16, 50, 84])
+    alpha = np.percentile(f.alpha[1500:], [16, 50, 84])
     t2 = time.time()
 
 
@@ -134,9 +133,9 @@ else:
     
     def log_likelihood_DS(data_model, R, ds, iCds):
         
-        lM200, c200 = data_model
+        lM200, c200, alpha = data_model
         
-        DS   = Delta_Sigma_NFW_2h_parallel(R,zmean,M200 = 10**lM200,c200=c200,cosmo_params=params,terms='1h+2h',ncores=ncores)
+        DS   = Delta_Sigma_Ein_2h_parallel(R,zmean,10**lM200,c200,alpha,cosmo_params=params,terms='1h+2h',ncores=ncores)
     
         L_DS = -np.dot((ds-DS),np.dot(iCds,(ds-DS)))/2.0
             
@@ -145,9 +144,9 @@ else:
     
     def log_probability_DS(data_model, R, profiles, iCOV):
         
-        lM200,c200 = data_model
+        lM200,c200,alpha = data_model
         
-        if 12.5 < lM200 < 16.0 and 1 < c200 < 7:
+        if 12.5 < lM200 < 16.0 and 1 < c200 < 7 and 0.1 < alpha < 0.6:
             return log_likelihood_DS(data_model, R, profiles, iCOV)
             
         return -np.inf
@@ -160,7 +159,8 @@ else:
     
     
     pos = np.array([np.random.uniform(12.5,15.5,15),
-                    np.random.uniform(1,5,15)]).T
+                    np.random.uniform(1,5,15),
+                    np.random.uniform(0.2,0.45,15)]).T
     
     nwalkers, ndim = pos.shape
     
@@ -171,23 +171,24 @@ else:
                                     args=(p.Rp,DSt,iCds))
     
     sampler_DS.run_mcmc(pos, nit, progress=True)
-    
+    # pool.terminate()
     
     
     mcmc_out_DS = sampler_DS.get_chain(flat=True).T
     lM     = np.percentile(mcmc_out_DS[0][1500:], [16, 50, 84])
     c200   = np.percentile(mcmc_out_DS[1][1500:], [16, 50, 84])
+    alpha  = np.percentile(mcmc_out_DS[2][1500:], [16, 50, 84])
     
     
     t2 = time.time()
     
     print('TIME DS')    
     print((t2-t1)/60.)
+    
 
 
-
-GT0,GX0   = GAMMA_components(p.Rp,zmean,ellip=1.,M200 = 10**lM[1],c200=c200[1],cosmo_params=params,terms='1h',pname='NFW')
-GT2h,GX2h = GAMMA_components(p.Rp,zmean,ellip=1.,M200 = 10**lM[1],c200=c200[1],cosmo_params=params,terms='2h',pname='NFW')
+GT0,GX0   = GAMMA_components(p.Rp,zmean,ellip=1.,M200 = 10**lM[1],c200=c200[1],cosmo_params=params,terms='1h',pname='Einasto',alpha=alpha[1])
+GT2h,GX2h = GAMMA_components(p.Rp,zmean,ellip=1.,M200 = 10**lM[1],c200=c200[1],cosmo_params=params,terms='2h',pname='Einasto',alpha=alpha[1])
 
 
 # NOW FIT q with Gamma components
@@ -265,6 +266,7 @@ print((time.time()-t1)/60.)
 
 table = [fits.Column(name='lM200', format='E', array=mcmc_out_DS[0]),
             fits.Column(name='c200', format='E', array=mcmc_out_DS[1]),
+            fits.Column(name='alpha', format='E', array=mcmc_out_DS[2]),
             fits.Column(name='q', format='E', array=mcmc_out_GC[0]),
             fits.Column(name='q2h', format='E', array=mcmc_out_GC[1])]
 
@@ -272,20 +274,10 @@ tbhdu = fits.BinTableHDU.from_columns(fits.ColDefs(table))
 
 h = fits.Header()
 h.append(('lM200',np.round(lM[1],4)))
-h.append(('elM200M',np.round(np.diff(lM)[0],4)))
-h.append(('elM200m',np.round(np.diff(lM)[1],4)))
-
 h.append(('c200',np.round(c200[1],4)))
-h.append(('ec200M',np.round(np.diff(c200)[0],4)))
-h.append(('ec200m',np.round(np.diff(c200)[1],4)))
-
+h.append(('alpha',np.round(alpha[1],4)))
 h.append(('q',np.round(q[1],4)))
-h.append(('eqM',np.round(np.diff(q)[0],4)))
-h.append(('eqm',np.round(np.diff(q)[1],4)))
-
 h.append(('q2h',np.round(q2h[1],4)))
-h.append(('eqM',np.round(np.diff(q2h)[0],4)))
-h.append(('eqm',np.round(np.diff(q2h)[1],4)))
 
 
 primary_hdu = fits.PrimaryHDU(header=h)

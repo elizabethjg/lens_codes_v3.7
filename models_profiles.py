@@ -14,7 +14,7 @@ cvel = c.value;   # Speed of light (m.s-1)
 G    = G.value;   # Gravitational constant (m3.kg-1.s-2)
 pc   = pc.value # 1 pc (m)
 Msun = M_sun.value # Solar mass (kg)
-params = {'flat': True, 'H0': 70.0, 'Om0': 0.25, 'Ob0': 0.044, 'sigma8': 0.8, 'ns': 0.95}
+params = {'flat': True, 'H0': 70.0, 'Om0': 0.3, 'Ob0': 0.044, 'sigma8': 0.8, 'ns': 0.95}
 
 def g(x,disp): 
     return (1./(np.sqrt(2*np.pi)*disp))*np.exp(-0.5*(x/disp)**2)
@@ -50,7 +50,7 @@ def c200_duffy(M,z):
     #calculo de c usando la relacion de Duffy et al 2008
     return 5.71*((M/2.e12)**-0.084)*((1.+z)**-0.47)
     
-def R200_NFW(M200,z,cosmo=cosmo):	
+def R200_NFW(M200,z,cosmo):	
     '''
     
     Returns the R_200
@@ -66,11 +66,15 @@ def R200_NFW(M200,z,cosmo=cosmo):
     '''
 
     roc_mpc = cosmo.critical_density(z).to(u.kg/(u.Mpc)**3).value
+    # from colossus.cosmology import cosmology  
+    # cosmology.addCosmology('MyCosmo', cosmo_params)
+    # cosmo = cosmology.setCosmology('MyCosmo')
+    # roc_mpc = cosmo.rho_c(z)*(Msun*(1.e3**3))
     
     return ((M200*(3.0*Msun))/(800.0*np.pi*roc_mpc))**(1./3.)
     
 
-def M200_NFW(R200,z,cosmo=cosmo):	
+def M200_NFW(R200,z,cosmo):	
     
     '''
     
@@ -87,6 +91,11 @@ def M200_NFW(R200,z,cosmo=cosmo):
     '''
 
     roc_mpc = cosmo.critical_density(z).to(u.kg/(u.Mpc)**3).value
+    
+    # from colossus.cosmology import cosmology  
+    # cosmology.addCosmology('MyCosmo', cosmo_params)
+    # cosmo = cosmology.setCosmology('MyCosmo')
+    # roc_mpc = cosmo.rho_c(z)/(1.e3**3)
     
     return (800.0*np.pi*roc_mpc*(R200**3))/(3.0*Msun)
 
@@ -159,13 +168,18 @@ def Sigma_NFW(R,z,M200,c200 = None,cosmo=cosmo):
     m = R == 0.
     R[m] = 1.e-8  
 
-    
+
+    # from colossus.cosmology import cosmology  
+    # cosmology.addCosmology('MyCosmo', cosmo_params)
+    # cosmo = cosmology.setCosmology('MyCosmo')
+    # roc_mpc = cosmo.rho_c(z)*(1.e3**3)
+
     R200 = R200_NFW(M200,z,cosmo)
     
     roc_mpc = cosmo.critical_density(z).to(u.Msun/(u.Mpc)**3).value
     
     if not c200:
-        c200 = c200_duffy(M200*cosmo.h,z)
+        c200 = c200_duffy(M200*cosmo.H0/100.,z)
     
     ####################################################
     
@@ -194,7 +208,7 @@ def Sigma_NFW(R,z,M200,c200 = None,cosmo=cosmo):
     atan2 = np.arctan(((x2-1.0)/(1.0+x2))**0.5)
     j2 = (1./(x2**2-1.))*(1.-(2./np.sqrt(x2**2 - 1.))*atan2) 
     
-    jota[m4] = np.interp(x[m4].astype(float64),[x1,x2],[j1,j2])
+    jota[m4] = np.interp(x[m4],[x1,x2],[j1,j2])
                 
     rs_m = R200/c200
     kapak = (2.*rs_m*deltac*roc_mpc)
@@ -247,7 +261,9 @@ def quadrupole(R,z,M200,c200 = None,cosmo=cosmo):
 
     return q
 
-def rho_NFW_2h(R,z,M200,c200,cosmo_params=params,terms='1h'):
+def rho_NFW_2h(R,z,M200,c200,
+               cosmo_params=params,
+               terms='1h',limint=500e3):
     
     '''
     R - radii [Mpc]
@@ -276,17 +292,19 @@ def rho_NFW_2h(R,z,M200,c200,cosmo_params=params,terms='1h'):
         rho_in  = pNFW.density(R*1.e3)
         rho = rho_in
     elif terms == '2h':
-        rho_out = pNFW.densityOuter(R*1.e3, interpolate=False, accuracy=0.01, max_r_integrate=500e3)
+        rho_out = pNFW.densityOuter(R*1.e3, interpolate=False, accuracy=0.01, max_r_integrate=limint)
         rho = rho_out
     elif terms == '1h+2h':
         rho_in  = pNFW.density(R*1.e3)
-        rho_out = pNFW.densityOuter(R*1.e3, interpolate=False, accuracy=0.01, max_r_integrate=500e3)
+        rho_out = pNFW.densityOuter(R*1.e3, interpolate=False, accuracy=0.01, max_r_integrate=limint)
         rho = rho_in + rho_out
     
     return rho/(1.e3**3)
 
 
-def Sigma_NFW_2h(R,z,M200,c200,cosmo_params=params,terms='1h'):
+def Sigma_NFW_2h(R,z,M200,c200,
+                 cosmo_params=params,
+                 terms='1h',limint=500e3):
 
     '''
     projected NFW density from colossus
@@ -311,16 +329,18 @@ def Sigma_NFW_2h(R,z,M200,c200,cosmo_params=params,terms='1h'):
         s_in  = pNFW.surfaceDensityInner(R*1.e3)
         s = s_in
     elif terms == '2h':
-        s_out = pNFW.surfaceDensityOuter(R*1.e3, interpolate=False, accuracy=0.01, max_r_integrate=500e3)
+        s_out = pNFW.surfaceDensityOuter(R*1.e3, interpolate=False, accuracy=0.01, max_r_integrate=limint)
         s = s_out
     elif terms == '1h+2h':
         s_in  = pNFW.surfaceDensityInner(R*1.e3)
-        s_out = pNFW.surfaceDensityOuter(R*1.e3, interpolate=False, accuracy=0.01, max_r_integrate=500e3)
+        s_out = pNFW.surfaceDensityOuter(R*1.e3, interpolate=False, accuracy=0.01, max_r_integrate=limint)
         s = s_in + s_out
     
     return s/(1.e3**2)
 
-def Sigma_Ein_2h(R,z,M200,c200,alpha,cosmo_params=params,terms='1h'):
+def Sigma_Ein_2h(R,z,M200,c200,
+                 alpha,cosmo_params=params,
+                 terms='1h',limint=500e3):
     
     '''
     projected Ein density from colossus
@@ -346,16 +366,18 @@ def Sigma_Ein_2h(R,z,M200,c200,alpha,cosmo_params=params,terms='1h'):
         s_in  = p.surfaceDensityInner(R*1.e3)
         s = s_in
     elif terms == '2h':
-        s_out = p.surfaceDensityOuter(R*1.e3, interpolate=False, accuracy=0.01, max_r_integrate=500e3)
+        s_out = p.surfaceDensityOuter(R*1.e3, interpolate=False, accuracy=0.01, max_r_integrate=limint)
         s = s_out
     elif terms == '1h+2h':
         s_in  = p.surfaceDensityInner(R*1.e3)
-        s_out = p.surfaceDensityOuter(R*1.e3, interpolate=False, accuracy=0.01, max_r_integrate=500e3)
+        s_out = p.surfaceDensityOuter(R*1.e3, interpolate=False, accuracy=0.01, max_r_integrate=limint)
         s = s_in + s_out
     
     return s/(1.e3**2)
 
-def Delta_Sigma_NFW_2h(R,z,M200,c200,cosmo_params=params,terms='1h'):
+def Delta_Sigma_NFW_2h(R,z,M200,c200,
+                    cosmo_params=params,
+                    terms='1h',limint=100e3):
     
     '''
     NFW contrast density from colossus
@@ -380,11 +402,11 @@ def Delta_Sigma_NFW_2h(R,z,M200,c200,cosmo_params=params,terms='1h'):
         ds_in  = pNFW.deltaSigmaInner(R*1.e3)
         ds = ds_in
     elif terms == '2h':
-        ds_out = pNFW.deltaSigmaOuter(R*1.e3, interpolate=False, interpolate_surface_density=False, accuracy=0.01, max_r_integrate=100e3)
+        ds_out = pNFW.deltaSigmaOuter(R*1.e3, interpolate=False, interpolate_surface_density=False, accuracy=0.01, max_r_integrate=limint)
         ds = ds_out
     elif terms == '1h+2h':
         ds_in  = pNFW.deltaSigmaInner(R*1.e3)
-        ds_out = pNFW.deltaSigmaOuter(R*1.e3, interpolate=False, interpolate_surface_density=False, accuracy=0.01, max_r_integrate=100e3)
+        ds_out = pNFW.deltaSigmaOuter(R*1.e3, interpolate=False, interpolate_surface_density=False, accuracy=0.01, max_r_integrate=limint)
         ds = ds_in + ds_out
     
     return ds/(1.e3**2)
@@ -392,8 +414,9 @@ def Delta_Sigma_NFW_2h(R,z,M200,c200,cosmo_params=params,terms='1h'):
 def Delta_Sigma_NFW_2h_unpack(minput):
 	return Delta_Sigma_NFW_2h(*minput)
 
-def Delta_Sigma_NFW_2h_parallel(r,z,M200,c200,terms='1h',
-                                cosmo_params=params,ncores=4):	
+def Delta_Sigma_NFW_2h_parallel(r,z,M200,c200,
+                    cosmo_params=params,
+                    terms='1h',limint=100e3,ncores=10):
     
     if ncores > len(r):
         ncores = len(r)
@@ -401,7 +424,7 @@ def Delta_Sigma_NFW_2h_parallel(r,z,M200,c200,terms='1h',
     
     slicer = int(round(len(r)/float(ncores), 0))
     slices = ((np.arange(ncores-1)+1)*slicer).astype(int)
-    slices = slices[(slices <= len(r))]
+    slices = slices[(slices < len(r))]
     r_splitted = np.split(r,slices)
     
     ncores = len(r_splitted)
@@ -411,8 +434,9 @@ def Delta_Sigma_NFW_2h_parallel(r,z,M200,c200,terms='1h',
     c200   = [c200]*ncores
     cosmo  = [cosmo_params]*ncores
     terms  = [terms]*ncores
+    limint = [limint]*ncores
         
-    entrada = np.array([r_splitted,z,M200,c200,cosmo,terms]).T
+    entrada = np.array([r_splitted,z,M200,c200,cosmo,terms,limint]).T
     
     pool = Pool(processes=(ncores))
     salida=np.array(pool.map(Delta_Sigma_NFW_2h_unpack, entrada))
@@ -426,7 +450,9 @@ def Delta_Sigma_NFW_2h_parallel(r,z,M200,c200,terms='1h',
     return DS_2h
 
 
-def Delta_Sigma_Ein_2h(R,z,M200,c200,alpha,cosmo_params=params,terms='1h'):
+def Delta_Sigma_Ein_2h(R,z,M200,c200,
+                       alpha,cosmo_params=params,
+                       terms='1h',limint=100e3):
     
     '''
     Einasto contrast density from colossus
@@ -450,16 +476,58 @@ def Delta_Sigma_Ein_2h(R,z,M200,c200,alpha,cosmo_params=params,terms='1h'):
         ds_in  = p.deltaSigmaInner(R*1.e3)
         ds = ds_in
     elif terms == '2h':
-        ds_out = p.deltaSigmaOuter(R*1.e3, interpolate=False, interpolate_surface_density=False, accuracy=0.01, max_r_integrate=100e3)
+        ds_out = p.deltaSigmaOuter(R*1.e3, interpolate=False, interpolate_surface_density=False, accuracy=0.01, max_r_integrate=limint)
         ds = ds_out
     elif terms == '1h+2h':
         ds_in  = p.deltaSigmaInner(R*1.e3)
-        ds_out = p.deltaSigmaOuter(R*1.e3, interpolate=False, interpolate_surface_density=False, accuracy=0.01, max_r_integrate=100e3)
+        ds_out = p.deltaSigmaOuter(R*1.e3, interpolate=False, interpolate_surface_density=False, accuracy=0.01, max_r_integrate=limint)
         ds = ds_in + ds_out
     
     return ds/(1.e3**2)
 
-def S2_quadrupole(R,z,M200,c200 = None,terms='1h',cosmo_params=params,pname='NFW',alpha=0.3):
+def Delta_Sigma_Ein_2h_unpack(minput):
+	return Delta_Sigma_Ein_2h(*minput)
+
+def Delta_Sigma_Ein_2h_parallel(r,z,M200,c200,
+                       alpha,cosmo_params=params,
+                       terms='1h',limint=100e3,ncores=10):
+    
+    if ncores > len(r):
+        ncores = len(r)
+    
+    
+    slicer = int(round(len(r)/float(ncores), 0))
+    slices = ((np.arange(ncores-1)+1)*slicer).astype(int)
+    slices = slices[(slices < len(r))]
+    r_splitted = np.split(r,slices)
+    
+    ncores = len(r_splitted)
+    
+    z      = [z]*ncores
+    M200   = [M200]*ncores
+    c200   = [c200]*ncores
+    alpha  = [alpha]*ncores
+    cosmo  = [cosmo_params]*ncores
+    terms  = [terms]*ncores
+    limint = [limint]*ncores
+        
+    entrada = np.array([r_splitted,z,M200,c200,alpha,cosmo,terms,limint]).T
+    
+    pool = Pool(processes=(ncores))
+    salida=np.array(pool.map(Delta_Sigma_Ein_2h_unpack, entrada))
+    pool.terminate()
+
+    DS_2h = np.array([])
+    
+    for s in salida:
+        DS_2h = np.append(DS_2h,s)
+            
+    return DS_2h
+
+
+def S2_quadrupole(R,z,M200,c200 = None,
+                  terms='1h',cosmo_params=params,
+                  pname='NFW',alpha=0.3,limint=500e3):
 
     '''
     Quadrupole term defined as -1.*(d(Sigma)/dr)*r
@@ -468,9 +536,9 @@ def S2_quadrupole(R,z,M200,c200 = None,terms='1h',cosmo_params=params,pname='NFW
     
     def monopole(R):
         if pname == 'NFW':
-            return Sigma_NFW_2h(R,z,M200,c200,terms=terms,cosmo_params=cosmo_params)
+            return Sigma_NFW_2h(R,z,M200,c200,terms=terms,cosmo_params=cosmo_params,limint=limint)
         elif pname == 'Einasto':
-            return Sigma_Ein_2h(R,z,M200,c200,alpha,terms=terms,cosmo_params=cosmo_params)
+            return Sigma_Ein_2h(R,z,M200,c200,alpha,terms=terms,cosmo_params=cosmo_params,limint=limint)
     
     m0p = derivative(monopole,R,dx=1e-4)
     q   =  m0p*R
@@ -530,7 +598,8 @@ def Sigma_NFW_miss(R,z,M200,s_off = None, tau = 0.2,
 
 
     def SNFW(r):
-        return Sigma_NFW_2h(r,z,M200,c200,cosmo_params=cosmo_params,terms='1h')
+        # return Sigma_NFW_2h(r,z,M200,c200,cosmo_params=params,terms='1h')
+        return Sigma_NFW(r,z,M200,c200)/1.e12
 
     def S_RRs(Rs,R):
         # F_Eq13
@@ -557,14 +626,12 @@ def Delta_Sigma_NFW_miss(R,z,M200,s_off = None, tau = 0.2,
     Misscentred density contraste for NFW
     
     '''
-  
-    R200 = R200_NFW(M200,z,cosmo)
-    
         
     if not c200:
         c200 = c200_duffy(M200*cosmo.h,z)
 
     if not s_off:
+        R200 = R200_NFW(M200,z,params)
         s_off = tau*R200
 
 
@@ -590,7 +657,7 @@ def Delta_Sigma_NFW_miss_parallel(r,z,M200,s_off = None, tau = 0.2,
     
     slicer = int(round(len(r)/float(ncores), 0))
     slices = ((np.arange(ncores-1)+1)*slicer).astype(int)
-    slices = slices[(slices <= len(r))]
+    slices = slices[(slices < len(r))]
     r_splitted = np.split(r,slices)
     
     ncores = len(r_splitted)
@@ -630,7 +697,7 @@ def Sigma_NFW_miss_parallel(r,z,M200,s_off = None, tau = 0.2,
     
     slicer = int(round(len(r)/float(ncores), 0))
     slices = ((np.arange(ncores-1)+1)*slicer).astype(int)
-    slices = slices[(slices <= len(r))]
+    slices = slices[(slices < len(r))]
     r_splitted = np.split(r,slices)
     
     ncores = len(r_splitted)
@@ -661,11 +728,12 @@ def DELTA_SIGMA_full(R,z,M200,c200,
                      s_off = None, tau = 0.2,
                      pcc = 0.7, P_Roff = Rayleigh, 
                      cosmo_params=params):
-                            
-    DS_miss = Delta_Sigma_NFW_miss(R,z,M200,s_off,tau,c200,P_Roff,params)
+    
+    
+    DS_miss = Delta_Sigma_NFW_miss(R,z,M200,s_off,tau,c200,P_Roff)
     DS_1h   = Delta_Sigma_NFW_2h(R,z,M200,c200,params,'1h')
     DS_2h   = Delta_Sigma_NFW_2h(R,z,M200,c200,params,'2h')
-    
+        
     return pcc*(DS_1h) + (1.-pcc)*DS_miss + DS_2h
 
 
@@ -683,7 +751,7 @@ def DELTA_SIGMA_full_parallel(r,z,M200,c200,
     
     slicer = int(round(len(r)/float(ncores), 0))
     slices = ((np.arange(ncores-1)+1)*slicer).astype(int)
-    slices = slices[(slices <= len(r))]
+    slices = slices[(slices < len(r))]
     r_splitted = np.split(r,slices)
     
     ncores = len(r_splitted)
@@ -709,3 +777,7 @@ def DELTA_SIGMA_full_parallel(r,z,M200,c200,
         DS_full = np.append(DS_full,s)
             
     return DS_full
+
+# t1 = time.time()
+# ds   = DELTA_SIGMA_full_parallel(R,0.2,1.e14,3.5,s_off = 0.15, pcc = 0.7, P_Roff = Gamma, cosmo_params=params,ncores=20)
+# print(time.time()-t1)

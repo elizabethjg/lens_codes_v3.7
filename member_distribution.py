@@ -88,7 +88,7 @@ def compute_axis(x,y,z,xp,yp,w = None,wp = None):
      w2d = w2d[j] # Ordered eingenvalues
      v2d = v2d[:,j] # Ordered eingenvectors
      
-     return v3d,w3d,v2d,w2d
+     return v3d,np.sqrt(w3d),v2d,np.sqrt(w2d)
 
 def momentos(dx,dy,w):
      

@@ -562,9 +562,12 @@ def main(lcat, sample='pru',
         
         # Define K masks   
         ncen = 50
+        Lall = fits.open('/home/elizabeth/MICE/HALO_props/halo_subset.fits')[1].data
+        m = (Lall.cat_x == 2)*(Lall.cat_y < 3)
+        X2    = np.array([Lall.ra_rc,Lall.dec_rc]).T
         X    = np.array([L.ra_rc,L.dec_rc]).T
         
-        km = kmeans_sample(X, ncen, maxiter=100, tol=1.0e-5)
+        km = kmeans_sample(X2, ncen, maxiter=100, tol=1.0e-5)
         labels = km.find_nearest(X)
         kmask = np.zeros((ncen+1,len(X)))
         kmask[0] = np.ones(len(X)).astype(bool)

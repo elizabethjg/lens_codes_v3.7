@@ -525,7 +525,7 @@ def main(lcat, sample='pru',
                 mlenses = np.in1d(L.unique_halo_id,ides)
         else:
                 
-                rs      = L.offset
+                # rs      = L.offset
                 # T       = (1. - L.q**2)/(1. - L.s**2)
                 
                 mmass   = (L.lgm >= lM_min)*(L.lgm < lM_max)

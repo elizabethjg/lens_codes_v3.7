@@ -505,6 +505,10 @@ def main(lcat, sample='pru',
         ra[L.yc==0] = 90.
         dec = np.rad2deg(np.arcsin(L.zc/sqrt(L.xc**2 + L.yc**2 + L.zc**2)))
 
+        ra = np.rad2deg(np.arctan(main.xc_rc/main.yc_rc))
+        ra[main.yc_rc==0] = 90.
+        dec = np.rad2deg(np.arcsin(main.zc_rc/sqrt(main.xc_rc**2 + main.yc_rc**2 + main.zc_rc**2)))
+
         L.ra_rc = ra
         L.dec_rc = dec
         '''
@@ -562,7 +566,7 @@ def main(lcat, sample='pru',
         
         # Define K masks   
         ncen = 50
-        Lall = fits.open('/home/elizabeth/MICE/HALO_props/halo_subset.fits')[1].data
+        Lall = fits.open('/home/elizabeth/MICE/HALO_props/halo_subset2.fits')[1].data
         m = (Lall.cat_x == 2)*(Lall.cat_y < 3)
         X2    = np.array([Lall.ra_rc,Lall.dec_rc]).T
         X    = np.array([L.ra_rc,L.dec_rc]).T

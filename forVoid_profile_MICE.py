@@ -582,11 +582,11 @@ def main(lcat, sample='pru',
 
                             km      = np.tile(Ksplit[l][j],(ndots,1)).T
 
-                            Ninbin += np.tile(profilesums['N_inbin'],(ncen+1,1))*km[:,0]
+                            Ninbin += np.tile(profilesums['N_inbin'],(ncen+1,1))*km
                                                 
-                            SIGMAwsum    += np.tile(profilesums['SIGMAwsum'],(ncen+1,1))*km[:,0]
-                            DSIGMAwsum_T += np.tile(profilesums['DSIGMAwsum_T'],(ncen+1,1))*km[:,0]
-                            DSIGMAwsum_X += np.tile(profilesums['DSIGMAwsum_X'],(ncen+1,1))*km[:,0]
+                            SIGMAwsum    += np.tile(profilesums['SIGMAwsum'],(ncen+1,1))*km
+                            DSIGMAwsum_T += np.tile(profilesums['DSIGMAwsum_T'],(ncen+1,1))*km
+                            DSIGMAwsum_X += np.tile(profilesums['DSIGMAwsum_X'],(ncen+1,1))*km
                             
                         
                 

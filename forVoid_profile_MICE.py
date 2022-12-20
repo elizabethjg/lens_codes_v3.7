@@ -291,7 +291,7 @@ def partial_profile(RA0,DEC0,Z,Rv,
         del(e1)
         del(e2)
         
-        r = (np.rad2deg(rads)*3600*KPCSCALE)/Rv
+        r = (np.rad2deg(rads)*3600*KPCSCALE)/(Rv*1000.)
         del(rads)
         
         
@@ -600,8 +600,8 @@ def main(lcat, sample='pru',
 
         # AVERAGE LENS PARAMETERS AND SAVE IT IN HEADER
         
-        zmean        = np.average(L.z,weights=Ntot)
-        lM_mean      = np.log10(np.average(10**L.lgMEin_rho,weights=Ntot))
+        # zmean        = np.average(L,weights=Ntot)
+        # lM_mean      = np.log10(np.average(10**L.lgMEin_rho,weights=Ntot))
         # c200_mean    = np.average(L.cNFW_S,weights=Ntot)
         # lM200_mean   = np.log10(np.average(10**L.lgMNFW_S,weights=Ntot))
         
@@ -610,15 +610,15 @@ def main(lcat, sample='pru',
         h.append(('N_LENSES',np.int(Nlenses)))
         h.append(('Lens cat',lcat))
         h.append(('MICE version sources 2.0'))
-        h.append(('lM_min',np.round(lM_min,2)))
-        h.append(('lM_max',np.round(lM_max,2)))
-        h.append(('z_min',np.round(z_min,2)))
-        h.append(('z_max',np.round(z_max,2)))
+        # h.append(('lM_min',np.round(lM_min,2)))
+        # h.append(('lM_max',np.round(lM_max,2)))
+        # h.append(('z_min',np.round(z_min,2)))
+        # h.append(('z_max',np.round(z_max,2)))
         h.append(('hcosmo',np.round(hcosmo,4)))
-        h.append(('lM_mean',np.round(lM_mean,4)))
+        # h.append(('lM_mean',np.round(lM_mean,4)))
         # h.append(('lM200_mean',np.round(lM200_mean,4)))
         # h.append(('c200_mean',np.round(c200_mean,4)))
-        h.append(('z_mean',np.round(zmean,4)))
+        # h.append(('z_mean',np.round(zmean,4)))
 
         if domap:
             

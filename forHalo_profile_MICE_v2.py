@@ -505,6 +505,10 @@ def main(lcat, sample='pru',
         ra[L.yc==0] = 90.
         dec = np.rad2deg(np.arcsin(L.zc/sqrt(L.xc**2 + L.yc**2 + L.zc**2)))
 
+        ra = np.rad2deg(np.arctan(main.xc_rc/main.yc_rc))
+        ra[main.yc_rc==0] = 90.
+        dec = np.rad2deg(np.arcsin(main.zc_rc/sqrt(main.xc_rc**2 + main.yc_rc**2 + main.zc_rc**2)))
+
         L.ra_rc = ra
         L.dec_rc = dec
         '''
@@ -521,7 +525,7 @@ def main(lcat, sample='pru',
                 mlenses = np.in1d(L.unique_halo_id,ides)
         else:
                 
-                rs      = L.offset
+                # rs      = L.offset
                 # T       = (1. - L.q**2)/(1. - L.s**2)
                 
                 mmass   = (L.lgm >= lM_min)*(L.lgm < lM_max)
@@ -562,9 +566,12 @@ def main(lcat, sample='pru',
         
         # Define K masks   
         ncen = 50
+        Lall = fits.open('/home/elizabeth/MICE/HALO_props/halo_subset2.fits')[1].data
+        m = (Lall.cat_x == 2)*(Lall.cat_y < 3)
+        X2    = np.array([Lall.ra_rc,Lall.dec_rc]).T
         X    = np.array([L.ra_rc,L.dec_rc]).T
         
-        km = kmeans_sample(X, ncen, maxiter=100, tol=1.0e-5)
+        km = kmeans_sample(X2, ncen, maxiter=100, tol=1.0e-5)
         labels = km.find_nearest(X)
         kmask = np.zeros((ncen+1,len(X)))
         kmask[0] = np.ones(len(X)).astype(bool)

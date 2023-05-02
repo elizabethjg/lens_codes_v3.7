@@ -584,8 +584,8 @@ def GAMMA_components_parallel(r,z,ellip,M200,
     
     for s in salida:
         GT, GX = s
-         gt = np.append(gt,GT)
-         gx = np.append(gx,GT)
+        gt = np.append(gt,GT)
+        gx = np.append(gx,GT)
             
     return [gt,gx]
 

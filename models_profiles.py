@@ -573,8 +573,6 @@ def GAMMA_components_parallel(r,z,ellip,M200,
     for j in range(ncores):
         entrada += [[r_splitted[j],z,ellip,M200,c200,terms,cosmo_params,pname,alpha]]
     
-    GAMMA_components(R,z,ellip,M200,c200 = None,terms='1h',cosmo_params=params,pname='NFW',alpha=0.3)
-    
     pool   = Pool(processes=(ncores))
     salida = pool.map(GAMMA_components_unpack, entrada)
     pool.terminate()

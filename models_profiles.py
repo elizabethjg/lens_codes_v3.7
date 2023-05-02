@@ -491,7 +491,7 @@ def Delta_Sigma_Ein_2h_parallel(r,z,M200,c200,
         entrada += [[r_splitted[j],z,M200,c200,alpha,cosmo_params,terms,limint]]
             
     pool = Pool(processes=(ncores))
-    salida=np.array(pool.map(Delta_Sigma_Ein_2h_unpack, entrada))
+    salida = pool.map(Delta_Sigma_Ein_2h_unpack, entrada)
     pool.terminate()
 
     DS_2h = np.array([])
@@ -576,7 +576,7 @@ def GAMMA_components_parallel(r,z,ellip,M200,
     GAMMA_components(R,z,ellip,M200,c200 = None,terms='1h',cosmo_params=params,pname='NFW',alpha=0.3)
     
     pool   = Pool(processes=(ncores))
-    salida = pool.map(Delta_Sigma_NFW_miss_unpack, entrada))
+    salida = pool.map(GAMMA_components_unpack, entrada)
     pool.terminate()
 
     gt = np.array([])
@@ -670,7 +670,7 @@ def Delta_Sigma_NFW_miss_parallel(r,z,M200,s_off = None, tau = 0.2,
         entrada += [[r_splitted[j],z,M200,s_off,tau,c200,P_Roff,cosmo_params]]
     
     pool = Pool(processes=(ncores))
-    salida=np.array(pool.map(Delta_Sigma_NFW_miss_unpack, entrada))
+    salida = pool.map(Delta_Sigma_NFW_miss_unpack, entrada)
     pool.terminate()
 
     DS_miss = np.array([])
@@ -699,7 +699,7 @@ def Sigma_NFW_miss_parallel(r,z,M200,s_off = None, tau = 0.2,
         entrada += [[r_splitted[j],z,M200,s_off,tau,c200,P_Roff,cosmo_params]]
     
     pool = Pool(processes=(ncores))
-    salida=np.array(pool.map(Sigma_NFW_miss_unpack, entrada))
+    salida = pool.map(Sigma_NFW_miss_unpack, entrada)
     pool.terminate()
 
     S_miss = np.array([])
@@ -741,7 +741,7 @@ def DELTA_SIGMA_full_parallel(r,z,M200,c200,
         entrada += [[r_splitted[j],z,M200,c200,s_off,tau,pcc,P_Roff,cosmo_params]]
     
     pool = Pool(processes=(ncores))
-    salida=np.array(pool.map(DELTA_SIGMA_full_unpack, entrada))
+    salida = pool.map(DELTA_SIGMA_full_unpack, entrada)
     pool.terminate()
 
     DS_full = np.array([])

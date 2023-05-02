@@ -420,26 +420,15 @@ def Delta_Sigma_NFW_2h_parallel(r,z,M200,c200,
     
     if ncores > len(r):
         ncores = len(r)
+            
+    r_splitted = np.array_split(r,ncores)
     
-    
-    slicer = int(round(len(r)/float(ncores), 0))
-    slices = ((np.arange(ncores-1)+1)*slicer).astype(int)
-    slices = slices[(slices < len(r))]
-    r_splitted = np.split(r,slices)
-    
-    ncores = len(r_splitted)
-    
-    z      = [z]*ncores
-    M200   = [M200]*ncores
-    c200   = [c200]*ncores
-    cosmo  = [cosmo_params]*ncores
-    terms  = [terms]*ncores
-    limint = [limint]*ncores
+    entrada = []
+    for j in range(ncores):
+        entrada += [[r_splitted[j],z,M200,c200,cosmo_params,terms,limint]]
         
-    entrada = np.array([r_splitted,z,M200,c200,cosmo,terms,limint]).T
-    
-    pool = Pool(processes=(ncores))
-    salida=np.array(pool.map(Delta_Sigma_NFW_2h_unpack, entrada))
+    pool   = Pool(processes=(ncores))
+    salida = pool.map(Delta_Sigma_NFW_2h_unpack, entrada)
     pool.terminate()
 
     DS_2h = np.array([])
@@ -495,24 +484,12 @@ def Delta_Sigma_Ein_2h_parallel(r,z,M200,c200,
     if ncores > len(r):
         ncores = len(r)
     
+    r_splitted = np.array_split(r,ncores)
     
-    slicer = int(round(len(r)/float(ncores), 0))
-    slices = ((np.arange(ncores-1)+1)*slicer).astype(int)
-    slices = slices[(slices < len(r))]
-    r_splitted = np.split(r,slices)
-    
-    ncores = len(r_splitted)
-    
-    z      = [z]*ncores
-    M200   = [M200]*ncores
-    c200   = [c200]*ncores
-    alpha  = [alpha]*ncores
-    cosmo  = [cosmo_params]*ncores
-    terms  = [terms]*ncores
-    limint = [limint]*ncores
-        
-    entrada = np.array([r_splitted,z,M200,c200,alpha,cosmo,terms,limint]).T
-    
+    entrada = []
+    for j in range(ncores):
+        entrada += [[r_splitted[j],z,M200,c200,alpha,cosmo_params,terms,limint]]
+            
     pool = Pool(processes=(ncores))
     salida=np.array(pool.map(Delta_Sigma_Ein_2h_unpack, entrada))
     pool.terminate()
@@ -579,6 +556,38 @@ def GAMMA_components(R,z,ellip,M200,c200 = None,terms='1h',cosmo_params=params,p
     
     return [gt,gx]
     
+def GAMMA_components_unpack(minput):
+	return GAMMA_components(*minput)
+
+def GAMMA_components_parallel(r,z,ellip,M200,
+                              c200 = None,terms='1h',
+                              cosmo_params=params,pname='NFW',
+                              alpha=0.3,ncores=4):	
+
+    if ncores > len(r):
+        ncores = len(r)
+    
+    r_splitted = np.array_split(r,ncores)
+    
+    entrada = []
+    for j in range(ncores):
+        entrada += [[r_splitted[j],z,ellip,M200,c200,terms,cosmo_params,pname,alpha]]
+    
+    GAMMA_components(R,z,ellip,M200,c200 = None,terms='1h',cosmo_params=params,pname='NFW',alpha=0.3)
+    
+    pool   = Pool(processes=(ncores))
+    salida = pool.map(Delta_Sigma_NFW_miss_unpack, entrada))
+    pool.terminate()
+
+    gt = np.array([])
+    gx = np.array([])
+    
+    for s in salida:
+        GT, GX = s
+         gt = np.append(gt,GT)
+         gx = np.append(gx,GT)
+            
+    return [gt,gx]
 
 ### MISCENTRED
 
@@ -654,23 +663,11 @@ def Delta_Sigma_NFW_miss_parallel(r,z,M200,s_off = None, tau = 0.2,
     if ncores > len(r):
         ncores = len(r)
     
+    r_splitted = np.array_split(r,ncores)
     
-    slicer = int(round(len(r)/float(ncores), 0))
-    slices = ((np.arange(ncores-1)+1)*slicer).astype(int)
-    slices = slices[(slices < len(r))]
-    r_splitted = np.split(r,slices)
-    
-    ncores = len(r_splitted)
-    
-    z      = [z]*ncores
-    M200   = [M200]*ncores
-    s_off  = [s_off]*ncores
-    tau    = [tau]*ncores
-    c200   = [c200]*ncores
-    P_Roff = [P_Roff]*ncores
-    cosmo  = [cosmo_params]*ncores
-        
-    entrada = np.array([r_splitted,z,M200,s_off,tau,c200,P_Roff,cosmo]).T
+    entrada = []
+    for j in range(ncores):
+        entrada += [[r_splitted[j],z,M200,s_off,tau,c200,P_Roff,cosmo_params]]
     
     pool = Pool(processes=(ncores))
     salida=np.array(pool.map(Delta_Sigma_NFW_miss_unpack, entrada))
@@ -695,22 +692,11 @@ def Sigma_NFW_miss_parallel(r,z,M200,s_off = None, tau = 0.2,
         ncores = len(r)
     
     
-    slicer = int(round(len(r)/float(ncores), 0))
-    slices = ((np.arange(ncores-1)+1)*slicer).astype(int)
-    slices = slices[(slices < len(r))]
-    r_splitted = np.split(r,slices)
+    r_splitted = np.array_split(r,ncores)
     
-    ncores = len(r_splitted)
-    
-    z      = [z]*ncores
-    M200   = [M200]*ncores
-    s_off  = [s_off]*ncores
-    tau    = [tau]*ncores
-    c200   = [c200]*ncores
-    P_Roff = [P_Roff]*ncores
-    cosmo  = [cosmo_params]*ncores
-        
-    entrada = np.array([r_splitted,z,M200,s_off,tau,c200,P_Roff,cosmo]).T
+    entrada = []
+    for j in range(ncores):
+        entrada += [[r_splitted[j],z,M200,s_off,tau,c200,P_Roff,cosmo_params]]
     
     pool = Pool(processes=(ncores))
     salida=np.array(pool.map(Sigma_NFW_miss_unpack, entrada))
@@ -748,24 +734,11 @@ def DELTA_SIGMA_full_parallel(r,z,M200,c200,
     if ncores > len(r):
         ncores = len(r)
     
+    r_splitted = np.array_split(r,ncores)
     
-    slicer = int(round(len(r)/float(ncores), 0))
-    slices = ((np.arange(ncores-1)+1)*slicer).astype(int)
-    slices = slices[(slices < len(r))]
-    r_splitted = np.split(r,slices)
-    
-    ncores = len(r_splitted)
-    
-    z      = [z]*ncores
-    M200   = [M200]*ncores
-    s_off  = [s_off]*ncores
-    tau    = [tau]*ncores
-    c200   = [c200]*ncores
-    P_Roff = [P_Roff]*ncores
-    cosmo  = [cosmo_params]*ncores
-    pcc    = [pcc]*ncores
-        
-    entrada = np.array([r_splitted,z,M200,c200,s_off,tau,pcc,P_Roff,cosmo]).T
+    entrada = []
+    for j in range(ncores):
+        entrada += [[r_splitted[j],z,M200,c200,s_off,tau,pcc,P_Roff,cosmo_params]]
     
     pool = Pool(processes=(ncores))
     salida=np.array(pool.map(DELTA_SIGMA_full_unpack, entrada))

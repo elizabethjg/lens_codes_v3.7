@@ -341,9 +341,9 @@ def Sigma_NFW_2h(R,z,M200,c200,
 def Sigma_NFW_2h_unpack(minput):
 	return Sigma_NFW_2h(*minput)
 
-def Sigma_NFW_2h_parallel(R,z,M200,c200,
+def Sigma_NFW_2h_parallel(r,z,M200,c200,
                  cosmo_params=params,
-                 terms='1h',limint=500e3,ncores=10):
+                 terms='1h',limint=200e3,ncores=10):
     
     if ncores > len(r):
         ncores = len(r)
@@ -361,7 +361,7 @@ def Sigma_NFW_2h_parallel(R,z,M200,c200,
     S_2h = np.array([])
     
     for s in salida:
-        S_2h = np.append(DS_2h,s)
+        S_2h = np.append(S_2h,s)
             
     return S_2h
 

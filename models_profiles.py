@@ -338,6 +338,34 @@ def Sigma_NFW_2h(R,z,M200,c200,
     
     return s/(1.e3**2)
 
+def Sigma_NFW_2h_unpack(minput):
+	return Sigma_NFW_2h(*minput)
+
+def Sigma_NFW_2h_parallel(R,z,M200,c200,
+                 cosmo_params=params,
+                 terms='1h',limint=500e3,ncores=10):
+    
+    if ncores > len(r):
+        ncores = len(r)
+            
+    r_splitted = np.array_split(r,ncores)
+    
+    entrada = []
+    for j in range(ncores):
+        entrada += [[r_splitted[j],z,M200,c200,cosmo_params,terms,limint]]
+        
+    pool   = Pool(processes=(ncores))
+    salida = pool.map(Sigma_NFW_2h_unpack, entrada)
+    pool.terminate()
+
+    S_2h = np.array([])
+    
+    for s in salida:
+        S_2h = np.append(DS_2h,s)
+            
+    return S_2h
+
+
 def Sigma_Ein_2h(R,z,M200,c200,
                  alpha,cosmo_params=params,
                  terms='1h',limint=500e3):

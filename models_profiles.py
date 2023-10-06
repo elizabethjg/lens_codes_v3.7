@@ -303,7 +303,7 @@ def Delta_Sigma_NFW_cored(R,z,M200,b,
                          c200 = None, cosmo=cosmo):	
     
     '''
-    Misscentred density contraste for NFW
+    Contrast density NFW-cored
     
     '''
         
@@ -659,7 +659,7 @@ def GAMMA_components(R,z,ellip,M200,c200 = None,
         elif pname == 'Einasto':
             return Sigma_Ein_2h(R,z,M200,c200,alpha,terms=terms,cosmo_params=cosmo_params)
         elif pname == 'NFW-core':
-            return Sigma_NFW_cored_2h(R,z,M200,b,c200,cosmo=cosmo)
+            return Sigma_NFW_cored(R,z,M200,b,c200,cosmo=cosmo)
 
     '''
     Quadrupole term defined as (d(Sigma)/dr)*r

@@ -212,8 +212,8 @@ def Sigma_NFW(R,z,M200,c200 = None,cosmo=cosmo):
                 
     rs_m = R200/c200
     kapak = (2.*rs_m*deltac*roc_mpc)
-    # Units M_sun/Mpc2
-    return kapak*jota
+    # Units M_sun/pc2
+    return (kapak*jota)/(1.e6**2)
     
 def rho_NFW(R,z,M200,c200 = None,cosmo=cosmo):			
     '''
@@ -243,9 +243,107 @@ def rho_NFW(R,z,M200,c200 = None,cosmo=cosmo):
     x=(R*c200)/R200
 
     ro = (deltac * roc_mpc)/(x * ((1 + x)**2))
-    # Units M_sun/Mpc3
-    return ro
+    # Units M_sun/pc3
+    return ro/(1.e6**3)
 
+def rho_NFW_cored(R,z,M200,b,c200 = None,cosmo=cosmo):			
+    '''
+    3D density for NFW (Newman et al. 2013 - 1209.1392)
+    
+    '''		
+    
+    if not isinstance(R, (np.ndarray)):
+        R = np.array([R])
+
+
+    m = R == 0.
+    R[m] = 1.e-8  
+
+    
+    R200 = R200_NFW(M200,z,cosmo)
+    
+    roc_mpc = cosmo.critical_density(z).to(u.Msun/(u.Mpc)**3).value
+    
+    if not c200:
+        c200 = c200_duffy(M200*cosmo.h,z)
+    
+    ####################################################
+    
+    deltac=(200./3.)*( (c200**3) / ( np.log(1.+c200)- (c200/(1+c200)) ))
+    
+    x=(R*c200)/R200
+
+    ro = (b *deltac * roc_mpc)/((1 + b*x) * (1 + x)**2)
+    # Units M_sun/pc3
+    return ro/(1.e6**3)
+
+def Sigma_NFW_cored(R,z,M200,b,c200 = None,cosmo=cosmo):			
+    '''
+    Projected density for NFW cored
+    
+    '''		
+    
+    if not isinstance(R, (np.ndarray)):
+        R = np.array([R])
+
+
+    m = R == 0.
+    R[m] = 1.e-8  
+
+
+    integral = np.array([])
+    for r in R:
+        argumento = lambda x: (x*rho_NFW_cored(x,z,M200,b,c200,cosmo))/np.sqrt(x**2-r**2)
+        integral  = np.append(integral,integrate.quad(argumento, r, np.inf, epsabs=1.e-02, epsrel=1.e-02)[0])
+    
+    # Units M_sun/pc2
+    return (2.*integral)*1.e6
+
+def Delta_Sigma_NFW_cored(R,z,M200,b,
+                         c200 = None, cosmo=cosmo):	
+    
+    '''
+    Misscentred density contraste for NFW
+    
+    '''
+        
+
+    integral = []
+    for r in R:
+        argumento = lambda x: Sigma_NFW_cored(x,z,M200,b,c200 = c200,cosmo=cosmo)[0]*x
+        integral  += [integrate.quad(argumento, 0, r, epsabs=1.e-02, epsrel=1.e-02)[0]]
+
+    DS_off    = (2./R**2)*integral - Sigma_NFW_cored(R,z,M200,b,c200 = c200,cosmo=cosmo)
+
+    return DS_off
+
+    
+def Delta_Sigma_NFW_cored_unpack(minput):
+	return Delta_Sigma_NFW_cored(*minput)
+
+def Delta_Sigma_NFW_cored_parallel(r,z,M200,b,
+                         c200 = None, cosmo=cosmo,ncores=4):	
+	
+    if ncores > len(r):
+        ncores = len(r)
+    
+    r_splitted = np.array_split(r,ncores)
+    
+    entrada = []
+    for j in range(ncores):
+        entrada += [[r_splitted[j],z,M200,b,c200,cosmo]]
+    
+    pool = Pool(processes=(ncores))
+    salida = pool.map(Delta_Sigma_NFW_cored_unpack, entrada)
+    pool.terminate()
+
+    DS_c = np.array([])
+    
+    for s in salida:
+        DS_c = np.append(DS_c,s)
+            
+    return DS_c
+    
 def quadrupole(R,z,M200,c200 = None,cosmo=cosmo):
    
     '''
@@ -550,13 +648,18 @@ def S2_quadrupole(R,z,M200,c200 = None,
 
     return -1.*q
 
-def GAMMA_components(R,z,ellip,M200,c200 = None,terms='1h',cosmo_params=params,pname='NFW',alpha=0.3):
+def GAMMA_components(R,z,ellip,M200,c200 = None,
+                     terms='1h',
+                     cosmo=cosmo,cosmo_params=params,
+                     pname='NFW',alpha=0.3,b=1):
     
     def monopole(R):
         if pname == 'NFW':
             return Sigma_NFW_2h(R,z,M200,c200,terms=terms,cosmo_params=cosmo_params)
         elif pname == 'Einasto':
             return Sigma_Ein_2h(R,z,M200,c200,alpha,terms=terms,cosmo_params=cosmo_params)
+        elif pname == 'NFW-core':
+            return Sigma_NFW_cored_2h(R,z,M200,b,c200,cosmo=cosmo)
 
     '''
     Quadrupole term defined as (d(Sigma)/dr)*r
